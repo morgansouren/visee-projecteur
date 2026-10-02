@@ -3,110 +3,132 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f1216">
+<meta name="theme-color" content="#93cfd3">
 <title>Visée Projecteur</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: single phone-first column, sticky tab bar (Calcul / Mesure), stage-dark first */
+/* Layout: agenda-style single column — uppercase labels left, values right, hairline rules;
+   aqua ground with blurred orange→magenta vertical bars as the house motif (header band + side columns on wide screens) */
 :root{
-  --bg:#0f1216; --surface:#171c22; --surface2:#1e252d; --line:#2b333d;
-  --fg:#e8e5de; --muted:#8e98a5;
-  --accent:#f2a93b; --beam:#6fd3e8;
-  --ok:#4cc38a; --warn:#e8c547; --bad:#ef5d5d;
-  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
-  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
-  color-scheme:dark;
+  --bg:#93cfd3; --bg2:#a6d9dc; --ink:#16213a; --muted:#3c5a66; --rule:#16213a;
+  --hot:#f0623a; --mag:#c63f96; --violet:#8b4cb8; --screen:#ffffff;
+  --ok:#0d6a45; --warn:#b5520d; --bad:#b3203f;
+  --f-ui:"Jost","Futura","Century Gothic",system-ui,sans-serif;
+  --f-num:"DM Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
 }
-@media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]){
-    --bg:#eceff2; --surface:#ffffff; --surface2:#f4f6f8; --line:#d2d8df;
-    --fg:#151a20; --muted:#5a6472;
-    --accent:#b36a00; --beam:#0a7f9a;
-    --ok:#1b8752; --warn:#9a7a05; --bad:#c63434;
-    color-scheme:light;
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1e28; --bg2:#152a35; --ink:#d4eff1; --muted:#8fb4bd; --rule:#d4eff1;
+    --hot:#ff7a4e; --mag:#e35bb5; --violet:#a874dc; --screen:#e9f7f8;
+    --ok:#5fd6a0; --warn:#ffb050; --bad:#ff6f86;
+    color-scheme:dark;
   }
 }
-:root[data-theme="light"]{
-  --bg:#eceff2; --surface:#ffffff; --surface2:#f4f6f8; --line:#d2d8df;
-  --fg:#151a20; --muted:#5a6472;
-  --accent:#b36a00; --beam:#0a7f9a;
-  --ok:#1b8752; --warn:#9a7a05; --bad:#c63434;
-  color-scheme:light;
+:root[data-theme="dark"]{
+  --bg:#0f1e28; --bg2:#152a35; --ink:#d4eff1; --muted:#8fb4bd; --rule:#d4eff1;
+  --hot:#ff7a4e; --mag:#e35bb5; --violet:#a874dc; --screen:#e9f7f8;
+  --ok:#5fd6a0; --warn:#ffb050; --bad:#ff6f86;
+  color-scheme:dark;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45;padding:0 16px;padding-block:0 40px}
-.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-header.top{padding-top:18px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
-h1{font-family:var(--f-display);font-weight:700;font-size:30px;letter-spacing:.02em;text-transform:uppercase;margin:0;line-height:1}
-h1 span{color:var(--accent)}
-.sub{color:var(--muted);font-size:13px}
-.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-block:8px}
-.tabs button{font-family:var(--f-display);font-size:19px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
-.tabs button[aria-selected="true"]{color:var(--bg);background:var(--accent);border-color:var(--accent)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--beam);outline-offset:2px}
-section.group{display:flex;flex-direction:column;gap:10px}
-.eyebrow{font-family:var(--f-display);font-weight:600;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
-.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
-label.f{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);min-width:0}
-label.f .u{color:var(--muted);opacity:.8}
-input,select{font:inherit;font-family:var(--f-mono);font-size:16px;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
-select{font-family:var(--f-body);font-size:15px}
-.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.seg button{flex:1;font:inherit;font-size:14px;padding:9px 8px;background:var(--surface);color:var(--muted);border:0;cursor:pointer}
-.seg button+button{border-left:1px solid var(--line)}
-.seg button[aria-pressed="true"]{background:var(--surface2);color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent)}
-.hint{font-size:12.5px;color:var(--muted)}
-.result{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
-.target{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.target .big{font-family:var(--f-mono);font-weight:600;font-size:46px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
-.target .lbl{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.1em;font-size:14px;color:var(--muted)}
-.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px}
-.kv dt{color:var(--muted)}
-.kv dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
-.msg{font-size:13.5px;padding:9px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface2)}
-.msg.warn{border-color:var(--warn);color:var(--fg)}
-.msg.bad{border-color:var(--bad)}
-.msg b{font-weight:600}
-.view{background:var(--surface2);border-radius:10px;border:1px solid var(--line);overflow:hidden}
-.view svg{display:block;width:100%;height:auto}
-.view figcaption{font-size:12px;color:var(--muted);padding:6px 10px;border-top:1px solid var(--line)}
-.cust{display:flex;flex-direction:column;gap:10px;padding:12px;border:1px dashed var(--line);border-radius:10px}
-/* measure tab */
-.meter{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 16px;display:flex;flex-direction:column;gap:14px;align-items:stretch}
-.reading{text-align:center;font-family:var(--f-mono);font-weight:600;font-size:clamp(56px,18vw,92px);line-height:1;font-variant-numeric:tabular-nums}
-.reading small{font-size:.35em;color:var(--muted);font-weight:500}
-.order{text-align:center;font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:.05em;text-transform:uppercase}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:16px;line-height:1.45;margin:0;padding:0 16px;padding-block:0 48px;min-height:100%}
+.sides{position:fixed;inset:0;pointer-events:none;z-index:0}
+.sides canvas{position:absolute;top:0;height:100%;width:min(16vw,230px)}
+.sides canvas.l{left:0} .sides canvas.r{right:0}
+@media (max-width:900px){.sides{display:none}}
+.wrap{position:relative;z-index:1;max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+
+/* header */
+.band{position:relative;margin:0 -16px;height:150px;overflow:hidden}
+.band canvas{position:absolute;inset:0;width:100%;height:100%}
+@media (min-width:901px){.band{height:110px}.band canvas{opacity:0}}
+.brand{position:relative;padding:20px 0 0;display:flex;flex-direction:column;gap:2px}
+.brand h1{margin:0;font-weight:500;font-size:34px;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.brand h1 i{font-style:normal;font-weight:300}
+.brand p{margin:6px 0 0;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:28px;border-bottom:1px solid var(--rule);padding-top:8px}
+nav.tabs button{font:inherit;font-size:19px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;background:none;border:0;color:var(--muted);padding:6px 0 10px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--hot)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--mag);outline-offset:3px}
+
+/* form blocks */
+.block{display:flex;flex-direction:column}
+.bhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:6px}
+.bhead h2{margin:0;font-weight:500;font-size:20px;letter-spacing:.05em;text-transform:uppercase}
+.bhead span{font-size:13px;color:var(--muted);letter-spacing:.03em}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));column-gap:22px}
+label.f{display:flex;flex-direction:column;gap:2px;padding:12px 0 0;min-width:0}
+label.f>span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+label.f>span em{font-style:normal;text-transform:none;letter-spacing:0;opacity:.85}
+input,select{font:inherit;color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--rule);border-radius:0;padding:6px 0 8px;width:100%;min-width:0}
+input{font-family:var(--f-num);font-size:22px}
+select{font-size:17px;font-weight:500;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);background-position:calc(100% - 12px) 55%,calc(100% - 6px) 55%;background-size:6px 6px;background-repeat:no-repeat;padding-right:24px}
+select option{background:var(--bg);color:var(--ink)}
+.note{font-size:13.5px;color:var(--muted);margin:10px 0 0}
+.pills{display:flex;flex-wrap:wrap;gap:8px;padding-top:8px}
+.pills button{font:inherit;font-size:14px;font-weight:500;letter-spacing:.04em;padding:8px 16px;border-radius:999px;border:1px solid var(--rule);background:transparent;color:var(--ink);cursor:pointer}
+.pills button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.pillrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));column-gap:22px;padding-top:12px}
+.pillrow .lab{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cust{margin-top:12px;padding:4px 14px 14px;border:1px dashed var(--rule);border-radius:4px}
+
+/* result: hero number + agenda rows */
+.hero{display:flex;flex-direction:column;gap:6px;padding:18px 0 14px;border-bottom:1px solid var(--rule)}
+.hero .k{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hero .big{font-family:var(--f-num);font-weight:500;font-size:clamp(64px,19vw,104px);line-height:.95;letter-spacing:-.03em;background:linear-gradient(90deg,var(--hot),var(--mag) 70%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums}
+.hero .sentence{font-size:17px;font-weight:500}
+.rows{margin:0;padding:0;list-style:none}
+.rows li{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:11px 0;border-bottom:1px solid var(--rule)}
+.rows li>span{font-size:13.5px;letter-spacing:.05em;text-transform:uppercase}
+.rows li>b{font-family:var(--f-num);font-weight:500;font-size:16px;text-align:right;font-variant-numeric:tabular-nums}
+.alerts{display:flex;flex-direction:column;gap:8px;padding-top:12px}
+.alert{display:flex;gap:10px;align-items:flex-start;font-size:14.5px}
+.alert::before{content:"";flex:0 0 14px;height:14px;margin-top:3px;border-radius:50%;border:1.5px solid currentColor}
+.alert.warn{color:var(--warn)} .alert.bad{color:var(--bad)}
+.alert.warn::before,.alert.bad::before{background:currentColor}
+figure.view{margin:0;display:flex;flex-direction:column;gap:6px}
+figure.view svg{display:block;width:100%;height:auto}
+figure.view figcaption{font-size:12.5px;color:var(--muted);letter-spacing:.02em}
+.views{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;padding-top:18px}
+
+/* measure */
+.scope{display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:14px}
+.scope svg{width:min(78vw,320px);height:auto;display:block}
+.reading{font-family:var(--f-num);font-weight:500;font-size:clamp(54px,16vw,84px);line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;text-align:center}
+.reading small{font-size:.38em;color:var(--muted)}
+.order{text-align:center;font-weight:500;font-size:22px;letter-spacing:.05em;text-transform:uppercase}
 .st-ok{color:var(--ok)} .st-warn{color:var(--warn)} .st-bad{color:var(--bad)} .st-idle{color:var(--muted)}
 .gauge svg{width:100%;height:auto;display:block}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.mini{background:var(--surface2);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
-.mini span{font-size:12px;color:var(--muted)}
-.mini b{font-family:var(--f-mono);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
-.btn{font:inherit;font-weight:600;font-size:15px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--fg);cursor:pointer}
-.btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
-.btn:disabled{opacity:.45;cursor:default}
-.btns{display:flex;flex-wrap:wrap;gap:8px}
-.btns .btn{flex:1 1 140px}
-ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px}
-.status-line{font-size:13px;color:var(--muted);text-align:center}
-.rollbox{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px}
-.rollhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-.rollhead .lbl{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.1em;font-size:15px;color:var(--muted)}
-.rollhead b{font-family:var(--f-mono);font-size:38px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.subhead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--rule);padding:16px 0 6px}
+.subhead span{font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+.subhead b{font-family:var(--f-num);font-weight:500;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.btn{font:inherit;font-size:15px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;padding:12px 20px;border-radius:999px;border:1px solid var(--rule);background:transparent;color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--bg)}
+.btn:disabled{opacity:.4;cursor:default}
+.btns{display:flex;flex-wrap:wrap;gap:10px;padding-top:12px}
+.btns .btn{flex:1 1 150px}
+ol.steps{margin:12px 0 0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:6px;padding:10px 0;border-bottom:1px solid var(--rule);font-size:15px}
+ol.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-size:13px;font-weight:500}
+.status{font-size:13.5px;color:var(--muted);text-align:center}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 
 
+<div class="sides" aria-hidden="true"><canvas class="l" id="sideL"></canvas><canvas class="r" id="sideR"></canvas></div>
+
 <div class="wrap">
-  <header class="top">
-    <h1>Visée <span>Projecteur</span></h1>
-    <div class="sub">Angle de tilt à régler au sol, shift gardé en réserve</div>
+  <div class="band" aria-hidden="true"><canvas id="bandC"></canvas></div>
+  <header class="brand" style="margin-top:-74px">
+    <h1>Visée <i>Projecteur</i></h1>
+    <p>Tilt réglé au sol · shift en réserve</p>
   </header>
 
   <nav class="tabs" role="tablist">
@@ -115,131 +137,123 @@ ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;f
   </nav>
 
   <!-- ============ CALCUL ============ -->
-  <div id="pane-calc" role="tabpanel" class="wrap" style="gap:18px">
-    <section class="group">
-      <div class="eyebrow">Écran</div>
-      <div class="grid">
-        <label class="f">Largeur <span class="u">m</span><input id="sw" type="number" step="0.01" inputmode="decimal" value="6.00"></label>
-        <label class="f">Hauteur <span class="u">m</span><input id="sh" type="number" step="0.01" inputmode="decimal" value="3.38"></label>
-        <label class="f">Bas de l'écran / sol <span class="u">m</span><input id="sb" type="number" step="0.01" inputmode="decimal" value="1.20"></label>
+  <div id="pane-calc" role="tabpanel" class="wrap" style="gap:28px">
+    <section class="block">
+      <div class="bhead"><h2>Écran</h2><span id="centerHint"></span></div>
+      <div class="fields">
+        <label class="f"><span>Largeur <em>m</em></span><input id="sw" type="number" step="0.01" inputmode="decimal" value="6.00"></label>
+        <label class="f"><span>Hauteur <em>m</em></span><input id="sh" type="number" step="0.01" inputmode="decimal" value="3.38"></label>
+        <label class="f"><span>Bas / sol <em>m</em></span><input id="sb" type="number" step="0.01" inputmode="decimal" value="1.20"></label>
       </div>
-      <div class="hint" id="centerHint"></div>
     </section>
 
-    <section class="group">
-      <div class="eyebrow">Projecteur</div>
-      <div class="grid">
-        <label class="f">Modèle<select id="model"></select></label>
-        <label class="f">Objectif<select id="lens"></select></label>
+    <section class="block">
+      <div class="bhead"><h2>Projecteur</h2></div>
+      <div class="fields">
+        <label class="f"><span>Modèle</span><select id="model"></select></label>
+        <label class="f"><span>Objectif</span><select id="lens"></select></label>
       </div>
       <div class="cust" id="custBox" hidden>
-        <div class="grid">
-          <label class="f">Format<select id="cAsp"><option value="1.7778">16:9</option><option value="1.6">16:10</option><option value="1.3333">4:3</option></select></label>
-          <label class="f">Throw min<input id="cTrMin" type="number" step="0.01" value="1.50"></label>
-          <label class="f">Throw max<input id="cTrMax" type="number" step="0.01" value="2.00"></label>
-          <label class="f">Shift vert. min <span class="u">%</span><input id="cShMin" type="number" step="1" value="0"></label>
-          <label class="f">Shift vert. max <span class="u">%</span><input id="cShMax" type="number" step="1" value="0"></label>
-          <label class="f">Offset natif <span class="u">% haut. image</span><input id="cOff" type="number" step="1" value="0"></label>
+        <div class="fields">
+          <label class="f"><span>Format</span><select id="cAsp"><option value="1.7778">16:9</option><option value="1.6">16:10</option><option value="1.3333">4:3</option></select></label>
+          <label class="f"><span>Throw min</span><input id="cTrMin" type="number" step="0.01" value="1.50"></label>
+          <label class="f"><span>Throw max</span><input id="cTrMax" type="number" step="0.01" value="2.00"></label>
+          <label class="f"><span>Shift min <em>%</em></span><input id="cShMin" type="number" step="1" value="0"></label>
+          <label class="f"><span>Shift max <em>%</em></span><input id="cShMax" type="number" step="1" value="0"></label>
+          <label class="f"><span>Offset natif <em>%</em></span><input id="cOff" type="number" step="1" value="0"></label>
         </div>
-        <div class="hint">Offset natif = distance entre l'axe de l'objectif et le centre de l'image, shift au neutre, en % de la hauteur d'image (0 = objectif centré ; un offset constructeur de 115 % correspond ici à 65 %).</div>
+        <p class="note">Offset natif : distance entre l'axe de l'objectif et le centre de l'image, shift au neutre, en % de la hauteur d'image. 0 = objectif centré ; un offset constructeur de 115 % correspond ici à 65 %.</p>
       </div>
-      <div class="grid">
-        <div class="f" style="font-size:12.5px;color:var(--muted);gap:4px;display:flex;flex-direction:column">Montage
-          <div class="seg" id="mountSeg">
-            <button type="button" data-v="inv" aria-pressed="true">Suspendu (inversé)</button>
+      <div class="pillrow">
+        <div><div class="lab">Montage</div>
+          <div class="pills" id="mountSeg">
+            <button type="button" data-v="inv" aria-pressed="true">Suspendu, inversé</button>
             <button type="button" data-v="table" aria-pressed="false">À l'endroit</button>
-          </div>
-        </div>
-        <div class="f" id="refBox" style="font-size:12.5px;color:var(--muted);gap:4px;display:flex;flex-direction:column">Shift au moment de la visée
-          <div class="seg" id="refSeg">
-            <button type="button" data-v="zero" aria-pressed="true">Neutre (0 %)</button>
+          </div></div>
+        <div id="refBox"><div class="lab">Shift pendant la visée</div>
+          <div class="pills" id="refSeg">
+            <button type="button" data-v="zero" aria-pressed="true">Neutre 0 %</button>
             <button type="button" data-v="mid" aria-pressed="false">Milieu de course</button>
-          </div>
-        </div>
+          </div></div>
       </div>
-      <div class="hint" id="refHint"></div>
+      <p class="note" id="refHint"></p>
     </section>
 
-    <section class="group">
-      <div class="eyebrow">Position</div>
-      <div class="grid">
-        <label class="f">Hauteur du truss (bas) <span class="u">m</span><input id="trim" type="number" step="0.01" inputmode="decimal" value="7.50"></label>
-        <label class="f">Objectif sous le truss <span class="u">m</span><input id="drop" type="number" step="0.01" inputmode="decimal" value="0.35"></label>
-        <label class="f">Distance objectif → écran <span class="u">m</span><input id="dist" type="number" step="0.01" inputmode="decimal" value="11.00"></label>
+    <section class="block">
+      <div class="bhead"><h2>Position</h2></div>
+      <div class="fields">
+        <label class="f"><span>Truss, bas <em>m</em></span><input id="trim" type="number" step="0.01" inputmode="decimal" value="7.50"></label>
+        <label class="f"><span>Objectif sous truss <em>m</em></span><input id="drop" type="number" step="0.01" inputmode="decimal" value="0.35"></label>
+        <label class="f"><span>Objectif → écran <em>m</em></span><input id="dist" type="number" step="0.01" inputmode="decimal" value="11.00"></label>
       </div>
-      <div class="hint">Distance horizontale, mesurée au sol à l'aplomb de l'objectif. Projecteur supposé dans l'axe de l'écran (pan réglé à l'œil).</div>
+      <p class="note">Distance horizontale mesurée au sol, à l'aplomb de l'objectif. Projecteur dans l'axe de l'écran, pan réglé à l'œil.</p>
     </section>
 
-    <div class="result" aria-live="polite">
-      <div class="target">
-        <div>
-          <div class="lbl">Tilt à régler</div>
-          <div class="big" id="rTarget">–</div>
-        </div>
-        <div style="text-align:right">
-          <div class="lbl">Réserve shift</div>
-          <div id="rTol" style="font-family:var(--f-mono);font-size:17px;font-variant-numeric:tabular-nums">–</div>
-        </div>
+    <section class="block" aria-live="polite">
+      <div class="bhead"><h2>Résultat</h2><span id="rTolHead"></span></div>
+      <div class="hero">
+        <span class="k">Tilt à régler</span>
+        <span class="big" id="rTarget">–</span>
+        <span class="sentence" id="rSentence"></span>
       </div>
-      <div id="rMsgs" style="display:flex;flex-direction:column;gap:8px"></div>
-      <dl class="kv" id="rKv"></dl>
-      <figure class="view" style="margin:0">
-        <svg id="sideView" viewBox="0 0 360 210" role="img" aria-label="Vue de profil"></svg>
-        <figcaption>Profil : faisceau shift au neutre choisi ; trait plein orange = zone que le shift peut encore atteindre.</figcaption>
-      </figure>
-      <figure class="view" style="margin:0">
-        <svg id="frontView" viewBox="0 0 360 230" role="img" aria-label="Vue de face, déformation trapézoïdale"></svg>
-        <figcaption>Face : image projetée avant correction géométrique (cyan) sur le cadre de l'écran (blanc).</figcaption>
-      </figure>
-    </div>
+      <div class="alerts" id="rMsgs"></div>
+      <ul class="rows" id="rKv"></ul>
+      <div class="views">
+        <figure class="view">
+          <svg id="sideView" viewBox="0 0 360 210" role="img" aria-label="Vue de profil"></svg>
+          <figcaption>Profil. Le trait épais à droite de l'écran montre ce que le shift peut encore atteindre.</figcaption>
+        </figure>
+        <figure class="view">
+          <svg id="frontView" viewBox="0 0 360 230" role="img" aria-label="Vue de face, déformation trapézoïdale"></svg>
+          <figcaption>Face. Image projetée avant correction géométrique, sur le cadre de l'écran.</figcaption>
+        </figure>
+      </div>
+    </section>
   </div>
 
   <!-- ============ MESURE ============ -->
-  <div id="pane-mes" role="tabpanel" class="wrap" style="gap:16px" hidden>
-    <div class="meter">
-      <div class="status-line">Cible <b id="mTarget" style="font-family:var(--f-mono)">–</b> · <span id="mRef">référence : gravité</span></div>
+  <div id="pane-mes" role="tabpanel" class="wrap" style="gap:26px" hidden>
+    <section class="block">
+      <div class="bhead"><h2>Viseur</h2><span>Cible <b id="mTarget" style="font-family:var(--f-num);font-weight:500">–</b> · <span id="mRef">gravité</span></span></div>
+      <div class="scope"><svg id="scope" viewBox="0 0 300 300" aria-hidden="true"></svg></div>
       <div class="reading st-idle" id="mRead">–<small>°</small></div>
       <div class="order st-idle" id="mOrder">Capteurs arrêtés</div>
       <div class="gauge"><svg id="gauge" viewBox="0 0 340 74" aria-hidden="true"></svg></div>
-      <div class="row2">
-        <div class="mini"><span>Écart à la cible</span><b id="mDelta">–</b></div>
-        <div class="mini"><span>Centre image à l'écran</span><b id="mCm">–</b></div>
-      </div>
-      <div class="rollbox">
-        <div class="rollhead"><span class="lbl">Roll · dévers</span><b id="mRoll" class="st-idle">–</b></div>
-        <div class="gauge"><svg id="rgauge" viewBox="0 0 340 62" aria-hidden="true"></svg></div>
-        <div class="order st-idle" id="mRollOrder" style="font-size:20px">–</div>
-        <div class="hint" id="mRollCm" style="text-align:center"></div>
-      </div>
-      <div class="btns">
-        <button class="btn primary" id="bStart" type="button">Démarrer les capteurs</button>
-      </div>
-      <div class="status-line" id="mSensor"></div>
-    </div>
+      <ul class="rows">
+        <li><span>Écart à la cible</span><b id="mDelta">–</b></li>
+        <li><span>Centre image à l'écran</span><b id="mCm">–</b></li>
+      </ul>
+      <div class="subhead"><span>Roll · dévers</span><b id="mRoll" class="st-idle">–</b></div>
+      <div class="gauge" style="padding-top:8px"><svg id="rgauge" viewBox="0 0 340 62" aria-hidden="true"></svg></div>
+      <div class="order st-idle" id="mRollOrder" style="font-size:19px">–</div>
+      <p class="note" id="mRollCm" style="text-align:center"></p>
+      <div class="btns"><button class="btn primary" id="bStart" type="button">Démarrer les capteurs</button></div>
+      <p class="status" id="mSensor"></p>
+    </section>
 
-    <section class="group">
-      <div class="eyebrow">Posé du GSM</div>
+    <section class="block">
+      <div class="bhead"><h2>Pose du GSM</h2></div>
       <ol class="steps">
-        <li>GSM à plat sur le capot du projecteur, <b>haut du GSM vers l'objectif</b>, bien aligné sur l'axe optique.</li>
-        <li>Vérifie le sens : en levant le haut du GSM, la valeur doit augmenter ; en baissant le côté droit, l'aiguille du roll doit partir vers « droite plus bas ». Sinon, inverse.</li>
-        <li>Règle le tilt jusqu'au vert, puis le roll jusqu'au vert (±0,2°). Une fois en l'air, repose le GSM pour vérifier le roll : des palans pas à la même hauteur font rouler le truss, donc l'image.</li>
+        <li><span>À plat sur le capot du projecteur, <b>haut du GSM vers l'objectif</b>, aligné sur l'axe optique.</span></li>
+        <li><span>Lève le haut du GSM : la valeur doit augmenter. Baisse le côté droit : le roll part vers « droite plus bas ». Sinon, inverse le sens.</span></li>
+        <li><span>Tilt au vert, puis roll au vert (±0,2°). Une fois en l'air, repose le GSM pour vérifier le roll : des palans à des hauteurs différentes font rouler le truss.</span></li>
       </ol>
       <div class="btns"><button class="btn" id="bFlip" type="button">Inverser le sens</button></div>
     </section>
 
-    <section class="group">
-      <div class="eyebrow">Calibration du GSM</div>
-      <div class="hint">Retournement à 180° : annule le biais du capteur, même sur une surface pas tout à fait plane. À faire une fois, c'est mémorisé.</div>
+    <section class="block">
+      <div class="bhead"><h2>Calibration</h2><span>retournement 180°</span></div>
+      <p class="note">Annule le biais du capteur, même sur une surface pas tout à fait plane. À faire une fois, c'est mémorisé.</p>
       <div class="btns">
         <button class="btn" id="bCalA" type="button" disabled>1 · Mesure A</button>
-        <button class="btn" id="bCalB" type="button" disabled>2 · Tourner 180°, mesure B</button>
+        <button class="btn" id="bCalB" type="button" disabled>2 · Tourner, mesure B</button>
       </div>
-      <div class="hint" id="calInfo"></div>
+      <p class="note" id="calInfo"></p>
     </section>
 
-    <section class="group">
-      <div class="eyebrow">Référence truss</div>
-      <div class="hint">Si le truss posé au sol n'est pas à la même assiette qu'une fois en l'air (sol en pente, truss qui roule sur ses chaises) : pose le GSM sur le truss, orienté vers l'écran, et prends-le comme zéro. L'angle du projecteur est alors mesuré par rapport au truss.</div>
+    <section class="block">
+      <div class="bhead"><h2>Référence truss</h2></div>
+      <p class="note">Si le truss posé au sol n'a pas la même assiette qu'en l'air (sol en pente, truss qui roule sur ses chaises) : GSM sur le truss, orienté vers l'écran, et prends-le comme zéro. Le projecteur est alors mesuré par rapport au truss.</p>
       <div class="btns">
         <button class="btn" id="bTruss" type="button" disabled>Zéro sur le truss</button>
         <button class="btn" id="bTrussClr" type="button" disabled>Revenir à la gravité</button>
@@ -255,6 +269,38 @@ const $=id=>document.getElementById(id);
 const fmt=(v,d=1)=>Number.isFinite(v)?v.toLocaleString('fr-BE',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
 const sgn=(v,d=1)=>Number.isFinite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),d):'–';
 const DEG=180/Math.PI;
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+/* ---------- Motif : barres verticales floues orange → magenta ---------- */
+function stripes(cv,side){
+  const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);
+  if(!r.width||!r.height)return;
+  cv.width=r.width*dpr;cv.height=r.height*dpr;
+  const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,r.width,r.height);
+  const W=r.width,H=r.height,hot=css('--hot'),mag=css('--mag'),vio=css('--violet');
+  const band=side==='band';
+  const n=band?Math.round(W/9):22;
+  c.filter='blur('+(band?2.2:3)+'px)';
+  for(let i=0;i<n;i++){
+    const t=i/(n-1);
+    let x,w,alpha;
+    if(band){x=t*W;const d=Math.abs(t-.5)*2;w=2+7*Math.pow(d,1.6);alpha=.25+.75*Math.pow(d,1.2);}
+    else{const e=side==='l'?t:1-t; x=side==='l'?(1-Math.pow(e,.8))*W:Math.pow(1-e,.8)*W; w=2+10*(1-e)**1.4; alpha=.2+.8*(1-e);}
+    const g=c.createLinearGradient(0,0,0,H);
+    const top=band?0:.08+.12*Math.sin(i*1.7)**2, bot=band?1:.92-.12*Math.cos(i*1.3)**2;
+    const mixMag=band?(t):(side==='l'?0:1);
+    g.addColorStop(top,'transparent');
+    g.addColorStop(top+(bot-top)*.25,mixMag>.5?vio:hot);
+    g.addColorStop(top+(bot-top)*.55,mixMag>.5?mag:hot);
+    g.addColorStop(top+(bot-top)*.8,mag);
+    g.addColorStop(bot,'transparent');
+    c.globalAlpha=alpha;c.fillStyle=g;c.fillRect(x-w/2,0,w,H);
+  }
+  c.globalAlpha=1;c.filter='none';
+  if(band){const f=c.createLinearGradient(0,0,0,H);f.addColorStop(0,'rgba(0,0,0,0)');f.addColorStop(1,css('--bg'));c.globalCompositeOperation='source-over';
+    c.fillStyle=f;c.fillRect(0,H*.35,W,H*.65);}
+}
+function paintMotif(){stripes($('bandC'),'band');stripes($('sideL'),'l');stripes($('sideR'),'r');}
 
 /* ---------- Profils ---------- */
 const PROFILES={
@@ -274,330 +320,252 @@ const PROFILES={
     lenses:[{name:'Zoom intégré 1,22–1,46:1',min:1.22,max:1.46}]},
   custom:{name:'Autre modèle (manuel)',custom:true,lenses:[{name:'Valeurs saisies',min:1.5,max:2}]}
 };
-
 const S={mount:'inv',ref:'zero'};
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
-/* ---------- UI setup ---------- */
-const modelSel=$('model'), lensSel=$('lens');
+/* ---------- UI ---------- */
+const modelSel=$('model'),lensSel=$('lens');
 for(const [k,p] of Object.entries(PROFILES)){const o=document.createElement('option');o.value=k;o.textContent=p.name;modelSel.appendChild(o);}
-function fillLenses(){
-  const p=PROFILES[modelSel.value];lensSel.innerHTML='';
+function fillLenses(){const p=PROFILES[modelSel.value];lensSel.innerHTML='';
   p.lenses.forEach((l,i)=>{const o=document.createElement('option');o.value=i;o.textContent=l.name;lensSel.appendChild(o);});
-  $('custBox').hidden=!p.custom;
-}
-function segInit(id,key){
-  const seg=$(id);
-  seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S[key]=b.dataset.v;syncSeg(id,key);update();});
-}
+  $('custBox').hidden=!p.custom;}
 function syncSeg(id,key){$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S[key]?'true':'false'));}
+function segInit(id,key){$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S[key]=b.dataset.v;syncSeg(id,key);update();});}
 segInit('mountSeg','mount');segInit('refSeg','ref');
-
 const FIELDS=['sw','sh','sb','trim','drop','dist','cAsp','cTrMin','cTrMax','cShMin','cShMax','cOff'];
 const saved=store.get('vp-inputs');
-if(saved){FIELDS.forEach(f=>{if(saved[f]!=null&&$(f))$(f).value=saved[f];}); if(saved.model&&PROFILES[saved.model])modelSel.value=saved.model; if(saved.mount)S.mount=saved.mount; if(saved.ref)S.ref=saved.ref;}
-fillLenses(); if(saved&&saved.lens!=null&&lensSel.options[saved.lens])lensSel.value=saved.lens;
+if(saved){FIELDS.forEach(f=>{if(saved[f]!=null&&$(f))$(f).value=saved[f];});if(saved.model&&PROFILES[saved.model])modelSel.value=saved.model;if(saved.mount)S.mount=saved.mount;if(saved.ref)S.ref=saved.ref;}
+fillLenses();if(saved&&saved.lens!=null&&lensSel.options[saved.lens])lensSel.value=saved.lens;
 syncSeg('mountSeg','mount');syncSeg('refSeg','ref');
 modelSel.addEventListener('change',()=>{fillLenses();update();});
 lensSel.addEventListener('change',update);
 FIELDS.forEach(f=>$(f).addEventListener('input',update));
-
-function profile(){
-  const k=modelSel.value,p=PROFILES[k];
-  if(p.custom){
-    return {name:p.name,aspect:+$('cAsp').value,offset:+$('cOff').value||0,shMin:+$('cShMin').value||0,shMax:+$('cShMax').value||0,
-      lens:{min:+$('cTrMin').value,max:+$('cTrMax').value},note:''};
-  }
-  return {...p,lens:p.lenses[+lensSel.value]||p.lenses[0]};
-}
+function profile(){const k=modelSel.value,p=PROFILES[k];
+  if(p.custom)return{name:p.name,aspect:+$('cAsp').value,offset:+$('cOff').value||0,shMin:+$('cShMin').value||0,shMax:+$('cShMax').value||0,lens:{min:+$('cTrMin').value,max:+$('cTrMax').value},note:''};
+  return{...p,lens:p.lenses[+lensSel.value]||p.lenses[0]};}
 
 /* ---------- Géométrie ----------
-   Repère : x latéral, y vertical (haut), z vers l'écran. Écran = plan z = D.
-   Tilt θ (+ = vise vers le haut). Axe avant f=(0,sinθ,cosθ).
-   "Haut" du boîtier b = s·(0,cosθ,−sinθ), s=+1 à l'endroit, −1 inversé.
-   À distance unitaire sur l'axe : image de largeur 1/TR, hauteur h=1/(TR·aspect),
-   centre décalé de v_c = (offset+shift)·h selon b.
-   Rayon vers le centre de l'image : pente = tan(θ + s·atan(v_c)).                 */
-function project(th,TR,o,s,Hp,D,asp,xi,yi){
-  const dy=Math.sin(th)+yi*s*Math.cos(th), dz=Math.cos(th)-yi*s*Math.sin(th);
-  if(dz<=1e-6)return null; const t=D/dz;
-  return {x:t*xi,y:Hp+t*dy};
-}
+   x latéral, y vertical, z vers l'écran (plan z = D). Tilt θ (+ = vers le haut).
+   Haut du boîtier b = s·(0,cosθ,−sinθ), s = +1 à l'endroit, −1 inversé.
+   À distance unitaire : image 1/TR de large, h = 1/(TR·aspect) de haut,
+   centre décalé de v_c = (offset+shift)·h selon b → rayon central : pente tan(θ + s·atan(v_c)). */
+function project(th,s,Hp,D,xi,yi){const dy=Math.sin(th)+yi*s*Math.cos(th),dz=Math.cos(th)-yi*s*Math.sin(th);if(dz<=1e-6)return null;const t=D/dz;return{x:t*xi,y:Hp+t*dy};}
 function solve(){
   const p=profile();
-  const sw=+$('sw').value, sh=+$('sh').value, sb=+$('sb').value, trim=+$('trim').value, drop=+$('drop').value, D=+$('dist').value;
+  const sw=+$('sw').value,sh=+$('sh').value,sb=+$('sb').value,trim=+$('trim').value,drop=+$('drop').value,D=+$('dist').value;
   if(!(sw>0&&sh>0&&D>0&&p.aspect>0&&Number.isFinite(sb)&&Number.isFinite(trim)))return null;
-  const asp=p.aspect;
-  let Wi=sw,Hi=sw/asp; if(Hi>sh){Hi=sh;Wi=sh*asp;}
-  const Hc=sb+sh/2, Hp=trim-(drop||0), s=S.mount==='inv'?-1:1;
-  const hasShift=p.shMax!==p.shMin;
-  const shRef=(hasShift&&S.ref==='mid')?(p.shMin+p.shMax)/2:0;
-  const o=(p.offset+shRef)/100;
+  const asp=p.aspect;let Wi=sw,Hi=sw/asp;if(Hi>sh){Hi=sh;Wi=sh*asp;}
+  const Hc=sb+sh/2,Hp=trim-(drop||0),s=S.mount==='inv'?-1:1;
+  const hasShift=p.shMax!==p.shMin, shRef=(hasShift&&S.ref==='mid')?(p.shMin+p.shMax)/2:0, o=(p.offset+shRef)/100;
   const phi=Math.atan((Hc-Hp)/D);
-  let TR=D/Wi, th=0, corners=null;
-  for(let i=0;i<40;i++){
-    const w=1/TR,h=w/asp,vc=o*h;
-    th=phi-s*Math.atan(vc);
-    const top=project(th,TR,o,s,Hp,D,asp,0,vc+h/2), bot=project(th,TR,o,s,Hp,D,asp,0,vc-h/2);
-    if(!top||!bot)return null;
-    const hc=Math.abs(top.y-bot.y); const nTR=TR*hc/Hi;
-    if(Math.abs(nTR-TR)<1e-9){TR=nTR;break;} TR=nTR;
-  }
-  const w=1/TR,h=w/asp,vc=o*h;
-  th=phi-s*Math.atan(vc);
-  const c=[[-w/2,vc+h/2],[w/2,vc+h/2],[w/2,vc-h/2],[-w/2,vc-h/2]].map(([x,y])=>project(th,TR,o,s,Hp,D,asp,x,y));
+  let TR=D/Wi,th=0;
+  for(let i=0;i<40;i++){const h=1/TR/asp,vc=o*h;th=phi-s*Math.atan(vc);
+    const a=project(th,s,Hp,D,0,vc+h/2),b=project(th,s,Hp,D,0,vc-h/2);if(!a||!b)return null;
+    const n=TR*Math.abs(a.y-b.y)/Hi;if(Math.abs(n-TR)<1e-9){TR=n;break;}TR=n;}
+  const w=1/TR,h=w/asp,vc=o*h;th=phi-s*Math.atan(vc);
+  const c=[[-w/2,vc+h/2],[w/2,vc+h/2],[w/2,vc-h/2],[-w/2,vc-h/2]].map(([x,y])=>project(th,s,Hp,D,x,y));
   if(c.some(v=>!v))return null;
-  // tolérance : plage de tilt rattrapable au shift
-  const vmin=(p.offset+p.shMin)/100*h, vmax=(p.offset+p.shMax)/100*h;
-  const ta=phi-s*Math.atan(vmin), tb=phi-s*Math.atan(vmax);
-  const tolLo=Math.min(ta,tb)-th, tolHi=Math.max(ta,tb)-th;
-  // zone atteignable par le centre à ce tilt
-  const yAt=v=>{const q=project(th,TR,o,s,Hp,D,asp,0,v);return q?q.y:NaN};
+  const vmin=(p.offset+p.shMin)/100*h,vmax=(p.offset+p.shMax)/100*h;
+  const ta=phi-s*Math.atan(vmin),tb=phi-s*Math.atan(vmax);
+  const tolLo=Math.min(ta,tb)-th,tolHi=Math.max(ta,tb)-th;
+  const yAt=v=>{const q=project(th,s,Hp,D,0,v);return q?q.y:NaN};
   const reach=[yAt(vmin),yAt(vmax)].sort((a,b)=>a-b);
-  // trapèze : largeurs haut et bas (y le plus haut = bord haut à l'écran)
-  const sorted=[c[0],c[1],c[2],c[3]];
-  const e1=Math.abs(c[1].x-c[0].x), e2=Math.abs(c[2].x-c[3].x);
-  const e1y=(c[0].y+c[1].y)/2, e2y=(c[2].y+c[3].y)/2;
-  const wTop=e1y>e2y?e1:e2, wBot=e1y>e2y?e2:e1;
-  return {p,sw,sh,sb,Hc,Hp,trim,D,s,Wi,Hi,TR,th,phi,tolLo,tolHi,hasShift,shRef,corners:c,reach,wTop,wBot,asp,o,h,vc};
+  const e1=Math.abs(c[1].x-c[0].x),e2=Math.abs(c[2].x-c[3].x),e1y=(c[0].y+c[1].y)/2,e2y=(c[2].y+c[3].y)/2;
+  const wTop=e1y>e2y?e1:e2,wBot=e1y>e2y?e2:e1;
+  return{p,sw,sh,sb,Hc,Hp,trim,D,s,Wi,Hi,TR,th,phi,tolLo,tolHi,hasShift,shRef,corners:c,reach,wTop,wBot};
 }
 
 /* ---------- Rendu calcul ---------- */
 let R=null;
 function update(){
   const inp={};FIELDS.forEach(f=>inp[f]=$(f).value);inp.model=modelSel.value;inp.lens=lensSel.value;inp.mount=S.mount;inp.ref=S.ref;store.set('vp-inputs',inp);
-  const sw=+$('sw').value,sh=+$('sh').value,sb=+$('sb').value;
-  $('centerHint').textContent=(sh>0&&Number.isFinite(sb))?`Centre de l'écran à ${fmt(sb+sh/2,2)} m du sol.`:'';
-  const p=profile();
-  $('refBox').hidden=!(p.shMax!==p.shMin);
+  const sh=+$('sh').value,sb=+$('sb').value;
+  $('centerHint').textContent=(sh>0&&Number.isFinite(sb))?`centre à ${fmt(sb+sh/2,2)} m`:'';
+  const p=profile();$('refBox').hidden=!(p.shMax!==p.shMin);
   R=solve();
   const msgs=$('rMsgs');msgs.innerHTML='';
-  const addMsg=(cls,html)=>{const d=document.createElement('div');d.className='msg '+cls;d.innerHTML=html;msgs.appendChild(d);};
-  if(!R){$('rTarget').textContent='–';$('rTol').textContent='–';$('rKv').innerHTML='';$('sideView').innerHTML='';$('frontView').innerHTML='';addMsg('bad','Données incomplètes ou géométrie impossible.');pushTarget();return;}
+  const addMsg=(cls,html)=>{const d=document.createElement('div');d.className='alert '+cls;d.innerHTML='<span>'+html+'</span>';msgs.appendChild(d);};
+  if(!R){$('rTarget').textContent='–';$('rSentence').textContent='';$('rTolHead').textContent='';$('rKv').innerHTML='';$('sideView').innerHTML='';$('frontView').innerHTML='';addMsg('bad','Données incomplètes ou géométrie impossible.');pushTarget();return;}
   const thD=R.th*DEG;
   $('rTarget').textContent=sgn(thD)+'°';
-  if(R.hasShift){$('rTol').innerHTML=`${sgn(R.tolLo*DEG)}° / ${sgn(R.tolHi*DEG)}°`;}
-  else{$('rTol').textContent='aucune';}
-  // hint ref
-  if(R.hasShift){
-    $('refHint').textContent = S.ref==='mid'
-      ? `Règle le shift vertical à ${sgn(R.shRef,0)} % (milieu de course) avant de lever : marge identique dans les deux sens.`
-      : 'Shift vertical au neutre (position home) avant de lever. Marge asymétrique : +50 % d\'un côté, −16 % de l\'autre.';
-  } else $('refHint').textContent=p.note||'';
-  // messages
-  const dir=thD<0?'vers le bas':'vers le haut';
-  addMsg('', `Incliner le projecteur de <b>${fmt(Math.abs(thD))}°</b> ${dir}${R.s<0?' (montage inversé)':''}.`);
-  if(R.TR<R.p.lens.min-1e-6) addMsg('bad',`Throw requis ${fmt(R.TR,2)}:1, sous le minimum de l'objectif (${fmt(R.p.lens.min,2)}:1) : l'image ne pourra pas être assez grande. Recule le projecteur ou change d'objectif.`);
-  else if(R.TR>R.p.lens.max+1e-6) addMsg('bad',`Throw requis ${fmt(R.TR,2)}:1, au-dessus du maximum de l'objectif (${fmt(R.p.lens.max,2)}:1) : l'image sera trop grande. Rapproche le projecteur ou change d'objectif.`);
-  const ks=R.wBot>0?R.wTop/R.wBot:1, ksPct=Math.abs(1-Math.min(R.wTop,R.wBot)/Math.max(R.wTop,R.wBot))*100;
-  if(ksPct>12) addMsg('warn',`Keystone important (${fmt(ksPct)} % d'écart de largeur haut/bas). La correction numérique coûtera de la résolution ; envisage de baisser le projecteur.`);
-  if(!R.hasShift) addMsg('warn','Pas de shift : aucune réserve. Chaque 0,1° de tilt déplace l\'image de ≈ '+fmt(R.D*Math.tan(0.1/DEG)/Math.cos(R.phi)**2*100,1)+' cm à l\'écran.');
-  const kv=[
-    ['Image (format natif)',`${fmt(R.Wi,2)} × ${fmt(R.Hi,2)} m`],
-    ['Hauteur objectif',`${fmt(R.Hp,2)} m`],
-    ['Dénivelé objectif → centre écran',`${sgn(R.Hc-R.Hp,2)} m`],
-    ['Throw nécessaire',`${fmt(R.TR,2)}:1`],
-    ['Plage de l\'objectif',`${fmt(R.p.lens.min,2)}–${fmt(R.p.lens.max,2)}:1`],
-    ['Largeur image haut / bas',`${fmt(R.wTop,2)} / ${fmt(R.wBot,2)} m`],
-    ['Keystone',`${fmt(ksPct)} %`]
-  ];
-  if(R.hasShift)kv.push(['Le shift couvre au centre',`${fmt(R.reach[0],2)} → ${fmt(R.reach[1],2)} m`]);
-  $('rKv').innerHTML=kv.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+  $('rSentence').textContent=`Incliner de ${fmt(Math.abs(thD))}° ${thD<0?'vers le bas':'vers le haut'}${R.s<0?', montage inversé':''}.`;
+  $('rTolHead').textContent=R.hasShift?`réserve ${sgn(R.tolLo*DEG)}° / ${sgn(R.tolHi*DEG)}°`:'pas de réserve shift';
+  if(R.hasShift){$('refHint').textContent=S.ref==='mid'
+      ?`Règle le shift vertical à ${sgn(R.shRef,0)} % (milieu de course) avant de lever : marge identique dans les deux sens.`
+      :'Shift vertical au neutre (position home) avant de lever. Marge asymétrique : +50 % d\'un côté, −16 % de l\'autre.';}
+  else $('refHint').textContent=p.note||'';
+  if(R.TR<R.p.lens.min-1e-6)addMsg('bad',`Throw requis ${fmt(R.TR,2)}:1, sous le minimum de l'objectif (${fmt(R.p.lens.min,2)}:1) : l'image ne pourra pas être assez grande. Recule ou change d'objectif.`);
+  else if(R.TR>R.p.lens.max+1e-6)addMsg('bad',`Throw requis ${fmt(R.TR,2)}:1, au-dessus du maximum de l'objectif (${fmt(R.p.lens.max,2)}:1) : l'image sera trop grande. Rapproche ou change d'objectif.`);
+  const ksPct=Math.abs(1-Math.min(R.wTop,R.wBot)/Math.max(R.wTop,R.wBot))*100;
+  if(ksPct>12)addMsg('warn',`Keystone important (${fmt(ksPct)} %). La correction numérique coûtera de la résolution ; envisage de baisser le projecteur.`);
+  if(!R.hasShift)addMsg('warn','Pas de shift, aucune réserve : chaque 0,1° déplace l\'image de ≈ '+fmt(R.D*Math.tan(0.1/DEG)/Math.cos(R.phi)**2*100,1)+' cm.');
+  const kv=[['Image, format natif',`${fmt(R.Wi,2)} × ${fmt(R.Hi,2)} m`],['Hauteur objectif',`${fmt(R.Hp,2)} m`],['Dénivelé vers le centre',`${sgn(R.Hc-R.Hp,2)} m`],
+    ['Throw nécessaire',`${fmt(R.TR,2)}:1`],['Plage objectif',`${fmt(R.p.lens.min,2)}–${fmt(R.p.lens.max,2)}:1`],['Largeur haut / bas',`${fmt(R.wTop,2)} / ${fmt(R.wBot,2)} m`],['Keystone',`${fmt(ksPct)} %`]];
+  if(R.hasShift)kv.push(['Le shift couvre',`${fmt(R.reach[0],2)} → ${fmt(R.reach[1],2)} m`]);
+  $('rKv').innerHTML=kv.map(([a,b])=>`<li><span>${a}</span><b>${b}</b></li>`).join('');
   drawSide();drawFront();pushTarget();
 }
-
-function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+const T=(x,y,txt,anc='start',size=10)=>`<text x="${x}" y="${y}" fill="${css('--muted')}" font-family="DM Mono, monospace" font-size="${size}" text-anchor="${anc}">${txt}</text>`;
+function beamDefs(id){return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${css('--hot')}" stop-opacity=".55"/><stop offset="1" stop-color="${css('--mag')}" stop-opacity=".35"/></linearGradient></defs>`;}
 function drawSide(){
-  const svg=$('sideView'),W=360,H=210,pad=22;
+  const svg=$('sideView'),W=360,H=210,pad=22,ink=css('--ink'),mut=css('--muted');
   const top=Math.max(R.trim+0.4,R.sb+R.sh+0.4,R.Hp+0.4);
-  const sx=(W-2*pad-20)/(R.D*1.06+0.6), sy=(H-2*pad)/top, k=Math.min(sx,sy);
-  const X=x=>pad+14+x*k, Y=y=>H-pad-y*k;
-  const c=R.corners, cy=(c[0].y+c[1].y)/2, by=(c[2].y+c[3].y)/2;
-  const lenLine=0.9;
-  const fx=Math.cos(R.th),fy=Math.sin(R.th);
-  // boîtier projecteur
-  const bw=0.7,bh=0.28,s=R.s; // m
-  const cx=0,cyp=R.Hp+ s*(-bh/2)*0; // lens at box front-center-ish
-  const box=[[-bw,-bh/2],[0,-bh/2],[0,bh/2],[-bw,bh/2]].map(([u,v])=>{const px=u*fx- v*fy, py=u*fy+v*fx;return `${X(px)},${Y(R.Hp+py)}`}).join(' ');
-  let g='';
-  g+=`<line x1="${pad}" y1="${Y(0)}" x2="${W-pad/2}" y2="${Y(0)}" stroke="${css('--line')}" stroke-width="1.5"/>`;
-  // truss
-  g+=`<rect x="${X(-0.25)}" y="${Y(R.trim+0.3)}" width="${0.5*k}" height="${0.3*k}" fill="none" stroke="${css('--muted')}" stroke-width="1.2"/>`;
-  g+=`<line x1="${X(-0.25)}" y1="${Y(R.trim+0.3)}" x2="${X(0.25)}" y2="${Y(R.trim)}" stroke="${css('--muted')}" stroke-width="0.8"/>`;
-  g+=`<line x1="${X(0)}" y1="${Y(R.trim)}" x2="${X(0)}" y2="${Y(R.Hp)}" stroke="${css('--muted')}" stroke-width="1"/>`;
-  // faisceau
-  g+=`<polygon points="${X(0)},${Y(R.Hp)} ${X(R.D)},${Y(Math.max(cy,by))} ${X(R.D)},${Y(Math.min(cy,by))}" fill="${css('--beam')}" fill-opacity="0.18" stroke="${css('--beam')}" stroke-opacity="0.6" stroke-width="1"/>`;
-  // axe optique
+  const k=Math.min((W-2*pad-20)/(R.D*1.06+0.6),(H-2*pad)/top);
+  const X=x=>pad+14+x*k,Y=y=>H-pad-y*k;
+  const c=R.corners,cy=(c[0].y+c[1].y)/2,by=(c[2].y+c[3].y)/2,fx=Math.cos(R.th),fy=Math.sin(R.th),bw=0.7,bh=0.28;
+  const box=[[-bw,-bh/2],[0,-bh/2],[0,bh/2],[-bw,bh/2]].map(([u,v])=>`${X(u*fx-v*fy)},${Y(R.Hp+u*fy+v*fx)}`).join(' ');
+  let g=beamDefs('bs');
+  g+=`<line x1="${pad}" y1="${Y(0)}" x2="${W-pad/2}" y2="${Y(0)}" stroke="${ink}" stroke-width="1"/>`;
+  g+=`<rect x="${X(-0.25)}" y="${Y(R.trim+0.3)}" width="${0.5*k}" height="${0.3*k}" fill="none" stroke="${ink}" stroke-width="1"/>`;
+  g+=`<path d="M${X(-0.25)} ${Y(R.trim+0.3)} L${X(0)} ${Y(R.trim)} L${X(0.25)} ${Y(R.trim+0.3)}" fill="none" stroke="${ink}" stroke-width=".8"/>`;
+  g+=`<line x1="${X(0)}" y1="${Y(R.trim)}" x2="${X(0)}" y2="${Y(R.Hp)}" stroke="${ink}" stroke-width="1"/>`;
+  g+=`<polygon points="${X(0)},${Y(R.Hp)} ${X(R.D)},${Y(Math.max(cy,by))} ${X(R.D)},${Y(Math.min(cy,by))}" fill="url(#bs)"/>`;
   const ax=R.D*1.02;
-  g+=`<line x1="${X(0)}" y1="${Y(R.Hp)}" x2="${X(ax)}" y2="${Y(R.Hp+Math.tan(R.th)*ax)}" stroke="${css('--muted')}" stroke-dasharray="4 4" stroke-width="1"/>`;
-  g+=`<polygon points="${box}" fill="${css('--surface')}" stroke="${css('--fg')}" stroke-width="1.2"/>`;
-  // écran
-  g+=`<line x1="${X(R.D)}" y1="${Y(R.sb)}" x2="${X(R.D)}" y2="${Y(R.sb+R.sh)}" stroke="${css('--fg')}" stroke-width="4"/>`;
-  if(R.hasShift)g+=`<line x1="${X(R.D)+7}" y1="${Y(R.reach[0])}" x2="${X(R.D)+7}" y2="${Y(R.reach[1])}" stroke="${css('--accent')}" stroke-width="3"/>`;
-  g+=`<circle cx="${X(R.D)}" cy="${Y(R.Hc)}" r="3.5" fill="${css('--accent')}"/>`;
-  // cotes
-  const t=(x,y,txt,anc='start')=>`<text x="${x}" y="${y}" fill="${css('--muted')}" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="${anc}">${txt}</text>`;
-  g+=t(X(0)+6,Y(R.trim+0.3)-4,`truss ${fmt(R.trim,2)} m`);
-  g+=t((X(0)+X(R.D))/2,Y(0)+14,`${fmt(R.D,2)} m`,'middle');
-  g+=t(X(R.D)-6,Y(R.sb)+12,`bas ${fmt(R.sb,2)}`,'end');
-  g+=t(X(0)+8,Y(R.Hp)+(R.th<0?-8:14),`${sgn(R.th*DEG)}°`);
+  g+=`<line x1="${X(0)}" y1="${Y(R.Hp)}" x2="${X(ax)}" y2="${Y(R.Hp+Math.tan(R.th)*ax)}" stroke="${mut}" stroke-dasharray="3 4" stroke-width="1"/>`;
+  g+=`<polygon points="${box}" fill="${css('--bg')}" stroke="${ink}" stroke-width="1.3"/>`;
+  g+=`<line x1="${X(R.D)}" y1="${Y(R.sb)}" x2="${X(R.D)}" y2="${Y(R.sb+R.sh)}" stroke="${ink}" stroke-width="4"/>`;
+  if(R.hasShift)g+=`<line x1="${X(R.D)+8}" y1="${Y(R.reach[0])}" x2="${X(R.D)+8}" y2="${Y(R.reach[1])}" stroke="${css('--hot')}" stroke-width="4" stroke-linecap="round"/>`;
+  g+=`<circle cx="${X(R.D)}" cy="${Y(R.Hc)}" r="4" fill="${css('--bg')}" stroke="${css('--mag')}" stroke-width="2"/>`;
+  g+=T(X(0)+6,Y(R.trim+0.3)-4,`truss ${fmt(R.trim,2)} m`);
+  g+=T((X(0)+X(R.D))/2,Y(0)+14,`${fmt(R.D,2)} m`,'middle');
+  g+=T(X(R.D)-6,Y(R.sb)+12,`bas ${fmt(R.sb,2)}`,'end');
+  g+=T(X(0)+8,Y(R.Hp)+(R.th<0?-8:14),`${sgn(R.th*DEG)}°`,'start',11);
   svg.innerHTML=g;
 }
 function drawFront(){
   const svg=$('frontView'),W=360,H=230,pad=18;
-  const xs=[...R.corners.map(c=>c.x),-R.sw/2,R.sw/2], ys=[...R.corners.map(c=>c.y),R.sb,R.sb+R.sh];
+  const xs=[...R.corners.map(c=>c.x),-R.sw/2,R.sw/2],ys=[...R.corners.map(c=>c.y),R.sb,R.sb+R.sh];
   const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
-  const k=Math.min((W-2*pad)/(x1-x0),(H-2*pad-14)/(y1-y0));
-  const ox=(W-(x1-x0)*k)/2, oy=pad+((H-2*pad-14)-(y1-y0)*k)/2;
-  const X=x=>ox+(x-x0)*k, Y=y=>oy+(y1-y)*k;
-  let g='';
-  g+=`<polygon points="${R.corners.map(c=>`${X(c.x)},${Y(c.y)}`).join(' ')}" fill="${css('--beam')}" fill-opacity="0.22" stroke="${css('--beam')}" stroke-width="1.6"/>`;
-  g+=`<rect x="${X(-R.sw/2)}" y="${Y(R.sb+R.sh)}" width="${R.sw*k}" height="${R.sh*k}" fill="none" stroke="${css('--fg')}" stroke-width="1.6"/>`;
-  g+=`<circle cx="${X(0)}" cy="${Y(R.Hc)}" r="3" fill="${css('--accent')}"/>`;
+  const k=Math.min((W-2*pad)/(x1-x0),(H-2*pad-16)/(y1-y0));
+  const ox=(W-(x1-x0)*k)/2,oy=pad+((H-2*pad-16)-(y1-y0)*k)/2;
+  const X=x=>ox+(x-x0)*k,Y=y=>oy+(y1-y)*k;
+  let g=beamDefs('bf');
+  g+=`<rect x="${X(-R.sw/2)}" y="${Y(R.sb+R.sh)}" width="${R.sw*k}" height="${R.sh*k}" fill="${css('--screen')}" fill-opacity=".55" stroke="${css('--ink')}" stroke-width="1.2"/>`;
+  g+=`<polygon points="${R.corners.map(c=>`${X(c.x)},${Y(c.y)}`).join(' ')}" fill="url(#bf)" stroke="${css('--mag')}" stroke-width="1.5"/>`;
+  g+=`<circle cx="${X(0)}" cy="${Y(R.Hc)}" r="3.5" fill="${css('--ink')}"/>`;
   const ks=Math.abs(1-Math.min(R.wTop,R.wBot)/Math.max(R.wTop,R.wBot))*100;
-  g+=`<text x="${W/2}" y="${H-8}" fill="${css('--muted')}" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">haut ${fmt(R.wTop,2)} m · bas ${fmt(R.wBot,2)} m · keystone ${fmt(ks)} %</text>`;
+  g+=T(W/2,H-6,`haut ${fmt(R.wTop,2)} m · bas ${fmt(R.wBot,2)} m · keystone ${fmt(ks)} %`,'middle',11);
   svg.innerHTML=g;
 }
 
 /* ---------- Onglets ---------- */
-function tab(which){
-  const calc=which==='calc';
+function tab(which){const calc=which==='calc';
   $('tab-calc').setAttribute('aria-selected',calc);$('tab-mes').setAttribute('aria-selected',!calc);
   $('pane-calc').hidden=!calc;$('pane-mes').hidden=calc;
-  if(calc&&R){drawSide();drawFront();}
-}
+  if(calc&&R){drawSide();drawFront();}}
 $('tab-calc').addEventListener('click',()=>tab('calc'));
 $('tab-mes').addEventListener('click',()=>tab('mes'));
 
 /* ---------- Mesure ---------- */
-const M={on:false,got:false,pitch:null,roll:null,flip:store.get('vp-flip')||false,bias:store.get('vp-bias')||{p:0,r:0},calA:null,truss:null};
-function pushTarget(){
-  $('mTarget').textContent=R?sgn(R.th*DEG)+'°':'–';
-  drawGauge(); drawRollGauge(); refreshMeter();
-}
-function calInfo(){
-  $('calInfo').textContent=`Biais mémorisé : tilt ${sgn(M.bias.p,2)}°, dévers ${sgn(M.bias.r,2)}°.`;
-}
+const M={got:false,pitch:null,roll:null,flip:store.get('vp-flip')||false,bias:store.get('vp-bias')||{p:0,r:0},calA:null,truss:null};
+function pushTarget(){$('mTarget').textContent=R?sgn(R.th*DEG)+'°':'–';drawGauge();drawRollGauge();drawScope();refreshMeter();}
+function calInfo(){$('calInfo').textContent=`Biais mémorisé : tilt ${sgn(M.bias.p,2)}°, roll ${sgn(M.bias.r,2)}°.`;}
 calInfo();
-function current(){
-  if(M.pitch==null)return null;
-  let p=M.pitch-M.bias.p, r=M.roll-M.bias.r;
-  if(M.truss!=null)p-=M.truss;
-  return {p,r};
-}
-function onOri(e){
-  if(e.beta==null||e.gamma==null)return;
-  M.got=true;
-  let b=e.beta, g=e.gamma; if(M.flip){b=-b;g=-g;}
-  const a=0.12;
-  M.pitch=M.pitch==null?b:M.pitch+a*(b-M.pitch);
-  M.roll=M.roll==null?g:M.roll+a*(g-M.roll);
-}
-let raf=null;
-function loop(){refreshMeter();raf=requestAnimationFrame(loop);}
+function current(){if(M.pitch==null)return null;let p=M.pitch-M.bias.p,r=M.roll-M.bias.r;if(M.truss!=null)p-=M.truss;return{p,r};}
+function onOri(e){if(e.beta==null||e.gamma==null)return;M.got=true;let b=e.beta,g=e.gamma;if(M.flip){b=-b;g=-g;}
+  const a=0.12;M.pitch=M.pitch==null?b:M.pitch+a*(b-M.pitch);M.roll=M.roll==null?g:M.roll+a*(g-M.roll);}
+let raf=null;function loop(){refreshMeter();raf=requestAnimationFrame(loop);}
 function refreshMeter(){
-  const c=current(); const read=$('mRead'),ord=$('mOrder');
+  const c=current(),read=$('mRead'),ord=$('mOrder');
   if(!c){read.innerHTML='–<small>°</small>';return;}
   read.innerHTML=`${sgn(c.p,2)}<small>°</small>`;
-  // --- roll ---
   const rc=Math.abs(c.r)<=0.2?'st-ok':Math.abs(c.r)<=0.6?'st-warn':'st-bad';
-  $('mRoll').textContent=sgn(c.r,2)+'°'; $('mRoll').className=rc;
-  const ro=$('mRollOrder'); ro.className='order '+rc;
+  $('mRoll').textContent=sgn(c.r,2)+'°';$('mRoll').className=rc;
+  const ro=$('mRollOrder');ro.className='order '+rc;
   ro.textContent=Math.abs(c.r)<=0.2?'De niveau':(c.r>0?'Remonter le côté droit ':'Remonter le côté gauche ')+fmt(Math.abs(c.r),1)+'°';
   const Wimg=R?R.Wi:(+$('sw').value||0);
   if(Wimg>0){const dcm=Wimg*Math.tan(Math.abs(c.r)/DEG)*100;
     $('mRollCm').textContent=Math.abs(c.r)<0.05?'Image droite.':`Un bord de l'image sera ≈ ${fmt(dcm,0)} cm plus bas que l'autre (${c.r>0?'côté droit':'côté gauche'}, vu depuis le projecteur).`;}
   drawRollNeedle(c.r);
-  if(!R){ord.textContent='Pas de cible';ord.className='order st-idle';return;}
-  const t=R.th*DEG, d=c.p-t, tlo=R.tolLo*DEG, thi=R.tolHi*DEG;
+  if(!R){ord.textContent='Pas de cible';ord.className='order st-idle';moveDot(0,c.r,'st-idle');return;}
+  const t=R.th*DEG,d=c.p-t,tlo=R.tolLo*DEG,thi=R.tolHi*DEG;
   $('mDelta').textContent=sgn(d,2)+'°';
-  let cls='st-bad',txt;
+  let cls,txt;
   if(Math.abs(d)<=0.3){cls='st-ok';txt='Dans la cible';}
-  else{
-    const inTol=R.hasShift&&d>=tlo&&d<=thi;
-    cls=inTol?'st-warn':'st-bad';
-    txt=(d>0?'Viser plus bas ':'Viser plus haut ')+fmt(Math.abs(d),1)+'°'+(inTol?' · rattrapable au shift':'');
-  }
-  read.className='reading '+cls; ord.className='order '+cls; ord.textContent=txt;
-  $('mDelta').className=cls;
+  else{const inTol=R.hasShift&&d>=tlo&&d<=thi;cls=inTol?'st-warn':'st-bad';
+    txt=(d>0?'Viser plus bas ':'Viser plus haut ')+fmt(Math.abs(d),1)+'°'+(inTol?' · rattrapable au shift':'');}
+  read.className='reading '+cls;ord.className='order '+cls;ord.textContent=txt;$('mDelta').className=cls;
   const cm=R.D*(Math.tan(R.th+d/DEG)-Math.tan(R.th))*100;
-  $('mCm').textContent=`${sgn(cm,0)} cm`;
-  $('mCm').className=cls;
-  drawNeedle(d);
+  $('mCm').textContent=`${sgn(cm,0)} cm`;$('mCm').className=cls;
+  drawNeedle(d);moveDot(d,c.r,Math.abs(d)<=0.3&&Math.abs(c.r)<=0.2?'st-ok':cls==='st-ok'?rc:cls);
 }
+
+/* viseur circulaire : x = roll, y = écart de tilt, échelle compressée */
+const SC=v=>Math.sign(v)*118*(1-Math.exp(-Math.abs(v)/2.2));
+function drawScope(){
+  const ink=css('--ink'),mut=css('--muted');let g=beamDefs('bsc');
+  g+=`<circle cx="150" cy="150" r="140" fill="none" stroke="${ink}" stroke-width="1.5"/>`;
+  [1,3,8].forEach(v=>{g+=`<circle cx="150" cy="150" r="${SC(v)}" fill="none" stroke="${mut}" stroke-width=".8" stroke-dasharray="2 4"/>`;
+    g+=`<text x="${150+SC(v)*0.7071+4}" y="${150-SC(v)*0.7071-4}" fill="${mut}" font-family="DM Mono, monospace" font-size="10">${fmt(v,0)}°</text>`;});
+  g+=`<circle cx="150" cy="150" r="${SC(0.3)}" fill="${css('--ok')}" fill-opacity=".22" stroke="${css('--ok')}" stroke-width="1.2"/>`;
+  g+=`<line x1="10" y1="150" x2="290" y2="150" stroke="${ink}" stroke-width=".8"/><line x1="150" y1="10" x2="150" y2="290" stroke="${ink}" stroke-width=".8"/>`;
+  g+=`<text x="150" y="28" text-anchor="middle" fill="${mut}" font-family="Jost, sans-serif" font-size="11" letter-spacing="1">VISE TROP HAUT</text>`;
+  g+=`<text x="150" y="282" text-anchor="middle" fill="${mut}" font-family="Jost, sans-serif" font-size="11" letter-spacing="1">VISE TROP BAS</text>`;
+  g+=`<text x="22" y="146" fill="${mut}" font-family="Jost, sans-serif" font-size="11">G bas</text><text x="278" y="146" text-anchor="end" fill="${mut}" font-family="Jost, sans-serif" font-size="11">D bas</text>`;
+  g+=`<g id="dot" transform="translate(150,150)"><circle r="17" fill="url(#bsc)" stroke="${ink}" stroke-width="1.5"/><circle r="2.5" fill="${ink}"/></g>`;
+  $('scope').innerHTML=g;
+}
+function moveDot(d,r,cls){const n=document.getElementById('dot');if(!n)return;
+  n.setAttribute('transform',`translate(${150+SC(r)},${150-SC(d)})`);
+  const col=cls==='st-ok'?css('--ok'):cls==='st-warn'?css('--warn'):cls==='st-bad'?css('--bad'):css('--ink');
+  n.firstChild.setAttribute('stroke',col);n.firstChild.setAttribute('stroke-width',cls==='st-ok'?'3':'1.5');}
+
+function gaugeRange(){if(!R)return 5;return Math.min(Math.max(3,Math.abs(R.tolLo*DEG),Math.abs(R.tolHi*DEG))*1.15,20);}
+function drawGauge(){
+  const svg=$('gauge'),W=340,L=14,Rr=W-14,mid=W/2,rng=gaugeRange(),X=d=>mid+(d/rng)*(Rr-mid),ink=css('--ink'),mut=css('--muted');
+  let g=`<line x1="${L}" y1="30" x2="${Rr}" y2="30" stroke="${ink}" stroke-width="1"/>`;
+  if(R&&R.hasShift){const a=Math.max(-rng,R.tolLo*DEG),b=Math.min(rng,R.tolHi*DEG);g+=`<rect x="${X(a)}" y="25" width="${X(b)-X(a)}" height="10" rx="5" fill="${css('--hot')}" fill-opacity=".35"/>`;}
+  g+=`<rect x="${X(-0.3)}" y="22" width="${Math.max(4,X(0.3)-X(-0.3))}" height="16" rx="3" fill="${css('--ok')}"/>`;
+  [-1,-.5,0,.5,1].forEach(f=>{const x=X(f*rng);g+=`<line x1="${x}" y1="38" x2="${x}" y2="44" stroke="${ink}"/><text x="${x}" y="56" fill="${mut}" font-family="DM Mono, monospace" font-size="10" text-anchor="middle">${f===0?'cible':sgn(f*rng,1)}</text>`;});
+  g+=`<g id="needle"><polygon points="0,16 -6,5 6,5" fill="${ink}"/><line x1="0" y1="16" x2="0" y2="40" stroke="${ink}" stroke-width="2"/></g>`;
+  g+=`<text x="${L}" y="72" fill="${mut}" font-family="Jost, sans-serif" font-size="11">vise trop bas</text><text x="${Rr}" y="72" fill="${mut}" font-family="Jost, sans-serif" font-size="11" text-anchor="end">vise trop haut</text>`;
+  svg.innerHTML=g;svg.dataset.rng=rng;
+}
+function drawNeedle(d){const n=document.getElementById('needle');if(!n)return;const W=340,mid=W/2,Rr=W-14,rng=+$('gauge').dataset.rng||5,dd=Math.max(-rng,Math.min(rng,d));n.setAttribute('transform',`translate(${mid+(dd/rng)*(Rr-mid)},0)`);}
 const RRNG=3;
 function drawRollGauge(){
-  const svg=$('rgauge'),W=340,L=14,Rr=W-14,mid=W/2,X=d=>mid+(d/RRNG)*(Rr-mid);
-  let g=`<rect x="${L}" y="16" width="${Rr-L}" height="14" rx="3" fill="${css('--surface2')}" stroke="${css('--line')}"/>`;
-  g+=`<rect x="${X(-0.6)}" y="16" width="${X(0.6)-X(-0.6)}" height="14" fill="${css('--warn')}" fill-opacity="0.3"/>`;
-  g+=`<rect x="${X(-0.2)}" y="16" width="${X(0.2)-X(-0.2)}" height="14" fill="${css('--ok')}" fill-opacity="0.75"/>`;
-  [-3,-1.5,0,1.5,3].forEach(v=>{const x=X(v);g+=`<line x1="${x}" y1="32" x2="${x}" y2="38" stroke="${css('--muted')}"/><text x="${x}" y="50" fill="${css('--muted')}" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">${v===0?'0°':sgn(v,1)}</text>`;});
-  g+=`<g id="rneedle"><polygon points="0,12 -6,2 6,2" fill="${css('--fg')}"/><line x1="0" y1="12" x2="0" y2="32" stroke="${css('--fg')}" stroke-width="2"/></g>`;
-  g+=`<text x="${L}" y="60" fill="${css('--muted')}" font-family="Public Sans, sans-serif" font-size="10">gauche plus bas</text><text x="${Rr}" y="60" fill="${css('--muted')}" font-family="Public Sans, sans-serif" font-size="10" text-anchor="end">droite plus bas</text>`;
+  const svg=$('rgauge'),W=340,L=14,Rr=W-14,mid=W/2,X=d=>mid+(d/RRNG)*(Rr-mid),ink=css('--ink'),mut=css('--muted');
+  let g=`<line x1="${L}" y1="24" x2="${Rr}" y2="24" stroke="${ink}" stroke-width="1"/>`;
+  g+=`<rect x="${X(-0.6)}" y="19" width="${X(0.6)-X(-0.6)}" height="10" rx="5" fill="${css('--hot')}" fill-opacity=".35"/>`;
+  g+=`<rect x="${X(-0.2)}" y="16" width="${X(0.2)-X(-0.2)}" height="16" rx="3" fill="${css('--ok')}"/>`;
+  [-3,-1.5,0,1.5,3].forEach(v=>{const x=X(v);g+=`<line x1="${x}" y1="32" x2="${x}" y2="38" stroke="${ink}"/><text x="${x}" y="50" fill="${mut}" font-family="DM Mono, monospace" font-size="10" text-anchor="middle">${v===0?'0°':sgn(v,1)}</text>`;});
+  g+=`<g id="rneedle"><polygon points="0,12 -6,1 6,1" fill="${ink}"/><line x1="0" y1="12" x2="0" y2="34" stroke="${ink}" stroke-width="2"/></g>`;
+  g+=`<text x="${L}" y="61" fill="${mut}" font-family="Jost, sans-serif" font-size="11">gauche plus bas</text><text x="${Rr}" y="61" fill="${mut}" font-family="Jost, sans-serif" font-size="11" text-anchor="end">droite plus bas</text>`;
   svg.innerHTML=g;
 }
-function drawRollNeedle(r){
-  const n=document.getElementById('rneedle'); if(!n)return;
-  const W=340,mid=W/2,Rr=W-14,rr=Math.max(-RRNG,Math.min(RRNG,r));
-  n.setAttribute('transform',`translate(${mid+(rr/RRNG)*(Rr-mid)},0)`);
-}
-function gaugeRange(){
-  if(!R)return 5;
-  const m=Math.max(3,Math.abs(R.tolLo*DEG),Math.abs(R.tolHi*DEG))*1.15;
-  return Math.min(m,20);
-}
-function drawGauge(){
-  const svg=$('gauge'),W=340,L=14,Rr=W-14,mid=W/2,rng=gaugeRange();
-  const X=d=>mid+(d/rng)*(Rr-mid);
-  let g=`<rect x="${L}" y="22" width="${Rr-L}" height="16" rx="3" fill="${css('--surface2')}" stroke="${css('--line')}"/>`;
-  if(R&&R.hasShift){const a=Math.max(-rng,R.tolLo*DEG),b=Math.min(rng,R.tolHi*DEG);g+=`<rect x="${X(a)}" y="22" width="${X(b)-X(a)}" height="16" fill="${css('--warn')}" fill-opacity="0.3"/>`;}
-  g+=`<rect x="${X(-0.3)}" y="22" width="${X(0.3)-X(-0.3)}" height="16" fill="${css('--ok')}" fill-opacity="0.75"/>`;
-  [-1,-.5,0,.5,1].forEach(f=>{const x=X(f*rng);g+=`<line x1="${x}" y1="40" x2="${x}" y2="46" stroke="${css('--muted')}"/><text x="${x}" y="58" fill="${css('--muted')}" font-family="IBM Plex Mono, monospace" font-size="10" text-anchor="middle">${f===0?'cible':sgn(f*rng,1)}</text>`;});
-  g+=`<g id="needle"><polygon points="0,14 -6,4 6,4" fill="${css('--fg')}"/><line x1="0" y1="14" x2="0" y2="40" stroke="${css('--fg')}" stroke-width="2"/></g>`;
-  g+=`<text x="${L}" y="72" fill="${css('--muted')}" font-family="Public Sans, sans-serif" font-size="10">trop bas</text><text x="${Rr}" y="72" fill="${css('--muted')}" font-family="Public Sans, sans-serif" font-size="10" text-anchor="end">trop haut</text>`;
-  svg.innerHTML=g; svg.dataset.rng=rng;
-}
-function drawNeedle(d){
-  const n=document.getElementById('needle'); if(!n)return;
-  const W=340,mid=W/2,Rr=W-14,rng=+$('gauge').dataset.rng||5;
-  const dd=Math.max(-rng,Math.min(rng,d));
-  n.setAttribute('transform',`translate(${mid+(dd/rng)*(Rr-mid)},0)`);
-}
+function drawRollNeedle(r){const n=document.getElementById('rneedle');if(!n)return;const W=340,mid=W/2,Rr=W-14,rr=Math.max(-RRNG,Math.min(RRNG,r));n.setAttribute('transform',`translate(${mid+(rr/RRNG)*(Rr-mid)},0)`);}
+
 let wake=null;
 async function start(){
-  try{
-    if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
-      const r=await DeviceOrientationEvent.requestPermission(); if(r!=='granted'){$('mSensor').textContent='Accès aux capteurs refusé.';return;}
-    }
-  }catch(e){}
+  try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
+    const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted'){$('mSensor').textContent='Accès aux capteurs refusé.';return;}}}catch(e){}
   if(typeof window.DeviceOrientationEvent==='undefined'){$('mSensor').textContent='Ce navigateur ne fournit pas l\'orientation de l\'appareil.';return;}
   window.addEventListener('deviceorientation',onOri);
-  M.on=true; $('bStart').textContent='Capteurs actifs'; $('bStart').disabled=true;
+  $('bStart').textContent='Capteurs actifs';$('bStart').disabled=true;
   ['bCalA','bTruss'].forEach(id=>$(id).disabled=false);
   $('mSensor').textContent='En attente des capteurs…';
   try{if(navigator.wakeLock)wake=await navigator.wakeLock.request('screen');}catch(e){}
-  setTimeout(()=>{
-    $('mSensor').textContent=M.got?'Capteurs OK · écran maintenu allumé si autorisé.':
-      'Aucune donnée capteur reçue. Le cadre d\'affichage bloque peut-être les capteurs : ouvre ce fichier HTML directement dans Chrome sur le GSM (connexion https ou fichier local).';
-  },1500);
+  setTimeout(()=>{$('mSensor').textContent=M.got?'Capteurs OK · écran maintenu allumé si autorisé.':
+    'Aucune donnée capteur. Ouvre l\'app depuis son adresse https (GitHub Pages) dans Chrome : les fichiers locaux et la vue artifact bloquent les capteurs.';},1500);
   if(!raf)loop();
 }
 $('bStart').addEventListener('click',start);
-$('bFlip').addEventListener('click',()=>{M.flip=!M.flip;store.set('vp-flip',M.flip);M.pitch=null;M.roll=null;$('bFlip').textContent=M.flip?'Sens inversé (rétablir)':'Inverser le sens';});
-if(M.flip)$('bFlip').textContent='Sens inversé (rétablir)';
+const flipLabel=()=>{$('bFlip').textContent=M.flip?'Sens inversé · rétablir':'Inverser le sens';};
+$('bFlip').addEventListener('click',()=>{M.flip=!M.flip;store.set('vp-flip',M.flip);M.pitch=null;M.roll=null;flipLabel();});flipLabel();
 $('bCalA').addEventListener('click',()=>{if(M.pitch==null)return;M.calA={p:M.pitch,r:M.roll};$('bCalB').disabled=false;$('calInfo').textContent=`A = ${sgn(M.pitch,2)}° / ${sgn(M.roll,2)}°. Tourne le GSM de 180° au même endroit, attends 2 s, puis mesure B.`;});
 $('bCalB').addEventListener('click',()=>{if(!M.calA||M.pitch==null)return;
   M.bias={p:(M.calA.p+M.pitch)/2,r:(M.calA.r+M.roll)/2};store.set('vp-bias',M.bias);
-  const surf=(M.calA.p-M.pitch)/2;M.calA=null;$('bCalB').disabled=true;calInfo();
-  $('calInfo').textContent+=` Pente de la surface : ${sgn(surf,2)}°.`;});
-$('bTruss').addEventListener('click',()=>{if(M.pitch==null)return;M.truss=M.pitch-M.bias.p;$('mRef').textContent=`référence : truss (${sgn(M.truss,2)}°)`;$('bTrussClr').disabled=false;});
-$('bTrussClr').addEventListener('click',()=>{M.truss=null;$('mRef').textContent='référence : gravité';$('bTrussClr').disabled=true;});
+  const surf=(M.calA.p-M.pitch)/2;M.calA=null;$('bCalB').disabled=true;calInfo();$('calInfo').textContent+=` Pente de la surface : ${sgn(surf,2)}°.`;});
+$('bTruss').addEventListener('click',()=>{if(M.pitch==null)return;M.truss=M.pitch-M.bias.p;$('mRef').textContent=`truss ${sgn(M.truss,2)}°`;$('bTrussClr').disabled=false;});
+$('bTrussClr').addEventListener('click',()=>{M.truss=null;$('mRef').textContent='gravité';$('bTrussClr').disabled=true;});
 
-// thème : redessiner si le schéma change
-try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(R){drawSide();drawFront();drawGauge();}drawRollGauge();});}catch(e){}
-new MutationObserver(()=>{if(R){drawSide();drawFront();drawGauge();}drawRollGauge();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+function redrawAll(){paintMotif();if(R){drawSide();drawFront();}drawGauge();drawRollGauge();drawScope();refreshMeter();}
+try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawAll);}catch(e){}
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(paintMotif,150);});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(R){drawSide();drawFront();}});
 
-update();
+update();paintMotif();
 })();
 </script>
 
