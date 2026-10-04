@@ -135,6 +135,9 @@ ol.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;
 #zoneView{touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none}
 .drag-hint{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 nav.tabs{gap:22px}
+.brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.themebtn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:999px;padding:6px 12px 6px 9px;cursor:pointer;flex:0 0 auto}
+.themebtn svg{width:16px;height:16px}
 @media (max-width:380px){nav.tabs button{font-size:17px}}
 </style>
 </head>
@@ -146,7 +149,8 @@ nav.tabs{gap:22px}
 <div class="wrap">
   <div class="band" aria-hidden="true"><canvas id="bandC"></canvas></div>
   <header class="brand" style="margin-top:-74px">
-    <h1>Visée <i>Projecteur</i></h1>
+    <div class="brandrow"><h1>Visée <i>Projecteur</i></h1>
+      <button type="button" class="themebtn" id="themeBtn" aria-label="Thème d'affichage"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg><span id="themeLbl">Auto</span></button></div>
     <p>Préparer l'accroche · régler au sol</p>
   </header>
 
@@ -362,6 +366,19 @@ function stripes(cv,side){
   if(band){const f=c.createLinearGradient(0,0,0,H);f.addColorStop(0,'rgba(0,0,0,0)');f.addColorStop(1,css('--bg'));c.fillStyle=f;c.fillRect(0,H*.35,W,H*.65);}
 }
 function paintMotif(){stripes($('bandC'),'band');stripes($('sideL'),'l');stripes($('sideR'),'r');}
+
+/* ---------- Thème : auto (suit le système) / clair / sombre ---------- */
+const THEMES=['auto','light','dark'],TLBL={auto:'Auto',light:'Clair',dark:'Sombre'};
+function applyTheme(t){
+  if(t==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t);
+  $('themeLbl').textContent=TLBL[t];
+  const m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
+}
+let theme='auto';try{theme=localStorage.getItem('vp-theme')||'auto';}catch(e){}
+if(!THEMES.includes(theme))theme='auto';
+applyTheme(theme);
+$('themeBtn').addEventListener('click',()=>{theme=THEMES[(THEMES.indexOf(theme)+1)%3];try{localStorage.setItem('vp-theme',theme);}catch(e){}applyTheme(theme);});
+try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>applyTheme(theme));}catch(e){}
 
 /* ---------- Profils ---------- */
 const PROFILES={
