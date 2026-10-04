@@ -132,7 +132,7 @@ ol.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;
 .legend i{display:inline-block;width:18px;height:0;border-top:2px solid;vertical-align:middle;margin-right:6px}
 .legend i.fill{height:10px;border:1px solid var(--mag);background:linear-gradient(90deg,var(--hot),var(--mag));opacity:.6}
 .legend i.fill2{height:10px;border:1px solid var(--mag);background:linear-gradient(90deg,var(--hot),var(--mag));opacity:.25}
-#zoneView{touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none}
+#zoneView{touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
 .drag-hint{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 nav.tabs{gap:22px}
 .brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -221,7 +221,7 @@ nav.tabs{gap:22px}
       </div>
       <div class="alerts" id="pMsgs"></div>
       <figure class="view" style="padding-top:16px">
-        <span class="drag-hint">Déplace le point noir : position du projecteur</span>
+        <span class="drag-hint">Fais glisser le point noir dans la zone colorée</span>
         <svg id="zoneView" viewBox="0 0 360 250" role="img" aria-label="Zone d'accroche, vue de profil. Le point noir est déplaçable."></svg>
         <div class="legend">
           <span><i class="fill"></i>tilt, keystone ≤ confort</span>
@@ -296,7 +296,7 @@ nav.tabs{gap:22px}
         <li><span>Centre image à l'écran</span><b id="mCm">–</b></li>
       </ul>
       <div class="subhead"><span>Roll · dévers</span><b id="mRoll" class="st-idle">–</b></div>
-      <div class="gauge" style="padding-top:8px"><svg id="rgauge" viewBox="0 0 340 62" aria-hidden="true"></svg></div>
+      <div class="gauge" style="padding-top:8px"><svg id="rgauge" viewBox="0 0 340 68" aria-hidden="true"></svg></div>
       <div class="order st-idle" id="mRollOrder" style="font-size:19px">–</div>
       <p class="note" id="mRollCm" style="text-align:center"></p>
       <div class="btns"><button class="btn primary" id="bStart" type="button">Démarrer les capteurs</button></div>
@@ -495,56 +495,76 @@ function zone(C){
 let ZV=null; // transformation du schéma, figée pendant le glissé
 let dragging=false;
 function drawZone(C,keepScale){
-  const svg=$('zoneView'),W=360,Ht=250,pad=18,{T}=C,ink=css('--ink');
+  const svg=$('zoneView'),W=360,{T}=C,ink=css('--ink');
   const Z=zone(C);
   const D=+$('dist').value,Hp=(+$('trim').value)-C.drop;
+  const okP=D>0&&Number.isFinite(Hp);
   if(!keepScale||!ZV){
-    const maxUp=Math.max(...Z.map(z=>z.kUp));
-    const yTop=Math.min(Math.max(T.top,C.Hp0,C.band?C.band[1]:0,Number.isFinite(Hp)?Hp:0)+3,Math.max(maxUp,T.top+1)+0.5);
-    const xMax=Math.max(C.Dmax*1.2,Number.isFinite(D)?D*1.08:0)+0.5;
-    const k=Math.min((W-2*pad-14)/xMax,(Ht-2*pad-18)/yTop);
-    ZV={k,yTop,xMax,x0:W-pad-8,y0:Ht-pad-18};
+    // cadrage serré : juste ce qu'il faut pour l'écran, la zone confort, la bande sans tilt et le point
+    const maxK=Math.max(...Z.map(z=>z.kUp)),maxC=Math.max(...Z.map(z=>z.cUp));
+    const want=Math.max(T.top,C.Hp0,C.band?C.band[1]:0,okP?Hp:0,maxC)+0.6;
+    const yTop=Math.max(T.top+0.4,Math.min(want,maxK+0.3,okP?Math.max(maxK+0.3,Hp+0.6):Infinity));
+    const xMax=Math.max(C.Dmax,okP?D:0)*1.03+0.3;
+    const padL=8,padR=14,padT=24,padB=22;
+    let k=(W-padL-padR)/xMax,Ht=yTop*k+padT+padB;
+    if(Ht>340){Ht=340;k=(Ht-padT-padB)/yTop;}
+    if(Ht<190)Ht=190;
+    ZV={k,yTop,xMax,W,Ht,x0:W-padR,y0:Ht-padB};
+    svg.setAttribute('viewBox',`0 0 ${W} ${Math.round(Ht)}`);
   }
-  const{k,yTop,x0,y0}=ZV;
+  const{k,yTop,x0,y0,Ht}=ZV;
   const X=d=>x0-d*k,Y=y=>y0-Math.min(Math.max(y,0),yTop)*k;
   let g=beamDefs('bz');
-  g+=`<line x1="${pad/2}" y1="${Y(0)}" x2="${W-pad/2}" y2="${Y(0)}" stroke="${ink}"/>`;
+  g+=`<line x1="0" y1="${Y(0)}" x2="${W}" y2="${Y(0)}" stroke="${ink}"/>`;
   const poly=(up,dn)=>Z.map(z=>`${X(z.D)},${Y(z[up])}`).concat(Z.slice().reverse().map(z=>`${X(z.D)},${Y(z[dn])}`)).join(' ');
   if(C.Dmax-C.Dmin>0.02){
     g+=`<polygon points="${poly('kUp','kDn')}" fill="url(#bz)" fill-opacity=".45" stroke="${css('--mag')}" stroke-width=".8" stroke-dasharray="3 3"/>`;
     g+=`<polygon points="${poly('cUp','cDn')}" fill="url(#bz)" stroke="${css('--mag')}" stroke-width="1"/>`;
   }else{
-    g+=`<line x1="${X(C.Dmin)}" y1="${Y(Z[0].kUp)}" x2="${X(C.Dmin)}" y2="${Y(Z[0].kDn)}" stroke="${css('--mag')}" stroke-width="8" stroke-opacity=".35"/>`;
+    g+=`<line x1="${X(C.Dmin)}" y1="${Y(Z[0].kUp)}" x2="${X(C.Dmin)}" y2="${Y(Z[0].kDn)}" stroke="${css('--mag')}" stroke-width="10" stroke-opacity=".35"/>`;
   }
   if(C.band)g+=`<rect x="${X(C.Dmax)}" y="${Y(C.band[1])}" width="${Math.max(3,X(C.Dmin)-X(C.Dmax))}" height="${Math.max(3,Y(C.band[0])-Y(C.band[1]))}" fill="${css('--hot')}" fill-opacity=".3" stroke="${css('--hot')}" stroke-width="2"/>`;
   g+=`<line x1="${X(C.Dmax)-6}" y1="${Y(C.Hp0)}" x2="${X(C.Dmin)+6}" y2="${Y(C.Hp0)}" stroke="${ink}" stroke-width="1.5" stroke-dasharray="5 4"/>`;
-  // bornes du zoom
-  [[C.Dmin,'grand-angle'],[C.Dmax,'télé']].forEach(([d,l],i)=>{if(i===1&&C.Dmax-C.Dmin<0.05)return;
+  [C.Dmin,C.Dmax].forEach((d,i)=>{if(i===1&&C.Dmax-C.Dmin<0.05)return;
     g+=`<line x1="${X(d)}" y1="${Y(0)}" x2="${X(d)}" y2="${Y(0)+5}" stroke="${ink}"/>`+T_(X(d),Y(0)+16,`${fmt(d,1)}`,'middle');});
-  // écran
   g+=`<line x1="${X(0)}" y1="${Y(T.sb)}" x2="${X(0)}" y2="${Y(T.top)}" stroke="${ink}" stroke-width="4"/>`;
   g+=`<circle cx="${X(0)}" cy="${Y(T.Hc)}" r="3.5" fill="${css('--bg')}" stroke="${css('--mag')}" stroke-width="2"/>`;
-  // point déplaçable + repères
-  if(D>0&&Number.isFinite(Hp)){
+  if(okP){
     const px=X(D),py=Y(Hp);
     g+=`<line x1="${px}" y1="${py}" x2="${px}" y2="${Y(0)}" stroke="${ink}" stroke-width=".8" stroke-dasharray="2 3"/>`;
     g+=`<line x1="${px}" y1="${py}" x2="${X(0)}" y2="${Y(T.Hc)}" stroke="${ink}" stroke-width=".8" stroke-opacity=".5"/>`;
-    g+=`<g id="zDot"><circle cx="${px}" cy="${py}" r="22" fill="transparent"/><circle cx="${px}" cy="${py}" r="${dragging?9:7}" fill="${ink}" stroke="${css('--bg')}" stroke-width="2"/></g>`;
-    const lx=px<70?px+12:px-12,anc=px<70?'start':'end';
-    g+=`<text x="${lx}" y="${Math.max(12,py-12)}" fill="${ink}" font-family="DM Mono, monospace" font-size="11" text-anchor="${anc}">${fmt(D,2)} m · ${fmt(H(C,Hp),2)} m</text>`;
+    g+=`<circle cx="${px}" cy="${py}" r="${dragging?9:7}" fill="${ink}" stroke="${css('--bg')}" stroke-width="2"/>`;
+    // étiquette centrée sur le point, au-dessus (ou dessous si le point touche le haut), maintenue dans le cadre
+    const lbl=`${fmt(D,2)} m · ${fmt(H(C,Hp),2)} m`,half=lbl.length*3.4+6;
+    const lx=clamp(px,half,W-half),ly=py<26?py+24:py-14;
+    g+=`<text x="${lx}" y="${ly}" fill="${ink}" font-family="DM Mono, monospace" font-size="11" text-anchor="middle" paint-order="stroke" stroke="${css('--bg')}" stroke-width="3">${lbl}</text>`;
   }
   svg.innerHTML=g;
 }
-// glisser le point
+// zone tactile : le point lui-même, ou l'intérieur de la zone d'accroche (keystone ≤ max)
+function inZone(C,w){
+  const Z=Zc;if(!Z||!w)return false;
+  const D=+$('dist').value,Hp=(+$('trim').value)-C.drop,r=28/ZV.k; // ~28 px autour du point
+  if(Math.hypot(w.D-D,w.Hp-Hp)<=r)return true;
+  const mD=Math.max(0.15,r*0.5);
+  if(w.D<Z[0].D-mD||w.D>Z[Z.length-1].D+mD)return false;
+  let i=0;while(i<Z.length-2&&Z[i+1].D<w.D)i++;
+  const a=Z[i],b=Z[Math.min(i+1,Z.length-1)],t=b.D>a.D?clamp((w.D-a.D)/(b.D-a.D),0,1):0;
+  const up=a.kUp+(b.kUp-a.kUp)*t,dn=a.kDn+(b.kDn-a.kDn)*t;
+  return w.Hp<=up+0.2&&w.Hp>=dn-0.2;
+}
 (function(){
   const svg=$('zoneView');let raf=0,pend=null;
-  const toWorld=e=>{const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const m=svg.getScreenCTM();if(!m||!ZV)return null;
+  const toWorld=(x,y)=>{const pt=svg.createSVGPoint();pt.x=x;pt.y=y;const m=svg.getScreenCTM();if(!m||!ZV)return null;
     const q=pt.matrixTransform(m.inverse());return{D:(ZV.x0-q.x)/ZV.k,Hp:(ZV.y0-q.y)/ZV.k};};
   const apply=()=>{raf=0;if(!pend)return;const C=common();if(!C)return;
     const D=clamp(Math.round(pend.D*20)/20,0.5,ZV.xMax),Hp=clamp(Math.round(pend.Hp*20)/20,0,ZV.yTop);
     $('dist').value=D.toFixed(2);$('trim').value=H(C,Hp).toFixed(2);update(true);};
-  svg.addEventListener('pointerdown',e=>{dragging=true;try{svg.setPointerCapture(e.pointerId);}catch(_){}pend=toWorld(e);if(!raf)raf=requestAnimationFrame(apply);e.preventDefault();});
-  svg.addEventListener('pointermove',e=>{if(!dragging)return;pend=toWorld(e);if(!raf)raf=requestAnimationFrame(apply);});
+  // le défilement n'est bloqué que si le doigt se pose dans la zone
+  svg.addEventListener('touchstart',e=>{const C=common(),t=e.touches[0];if(C&&t&&inZone(C,toWorld(t.clientX,t.clientY)))e.preventDefault();},{passive:false});
+  svg.addEventListener('pointerdown',e=>{const C=common();const w=toWorld(e.clientX,e.clientY);if(!C||!inZone(C,w))return;
+    dragging=true;try{svg.setPointerCapture(e.pointerId);}catch(_){}pend=w;if(!raf)raf=requestAnimationFrame(apply);});
+  svg.addEventListener('pointermove',e=>{if(!dragging)return;pend=toWorld(e.clientX,e.clientY);if(!raf)raf=requestAnimationFrame(apply);});
   const end=()=>{if(!dragging)return;dragging=false;update();};
   svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
 })();
@@ -766,30 +786,34 @@ function moveDot(d,r,cls){const n=document.getElementById('dot');if(!n)return;
   n.setAttribute('transform',`translate(${150+SC(r)},${150-SC(d)})`);
   const col=cls==='st-ok'?css('--ok'):cls==='st-warn'?css('--warn'):cls==='st-bad'?css('--bad'):css('--ink');
   n.firstChild.setAttribute('stroke',col);n.firstChild.setAttribute('stroke-width',cls==='st-ok'?'3':'1.5');}
-function gaugeRange(){if(!R)return 5;return Math.min(Math.max(3,Math.abs(R.tolLo*DEG),Math.abs(R.tolHi*DEG))*1.15,20);}
+/* jauges linéaires : même échelle que le viseur (±20°, resserrée au centre) */
+const GX=(v,L,Rr)=>{const mid=(L+Rr)/2;return mid+SC(v)/140*(Rr-mid);};
+const TICKS=[-20,-10,-5,-1,0,1,5,10,20];
+function gaugeBase(y,h,warnLo,warnHi){
+  const W=340,L=14,Rr=W-14,X=v=>GX(v,L,Rr),ink=css('--ink'),mut=css('--muted');
+  let g=`<line x1="${L}" y1="${y}" x2="${Rr}" y2="${y}" stroke="${ink}" stroke-width="1"/>`;
+  if(warnLo!=null)g+=`<rect x="${X(warnLo)}" y="${y-5}" width="${Math.max(2,X(warnHi)-X(warnLo))}" height="10" rx="5" fill="${css('--hot')}" fill-opacity=".35"/>`;
+  g+=`<rect x="${X(-TOL)}" y="${y-h/2}" width="${Math.max(4,X(TOL)-X(-TOL))}" height="${h}" rx="3" fill="${css('--ok')}"/>`;
+  TICKS.forEach(v=>{const x=X(v),big=Math.abs(v)%10===0;g+=`<line x1="${x}" y1="${y+8}" x2="${x}" y2="${y+(big?16:13)}" stroke="${ink}"/>`;
+    g+=`<text x="${x}" y="${y+27}" fill="${mut}" font-family="DM Mono, monospace" font-size="${big?10:9}" text-anchor="middle">${v===0?'0':sgn(v,0)}</text>`;});
+  return g;
+}
 function drawGauge(){
-  const svg=$('gauge'),W=340,L=14,Rr=W-14,mid=W/2,rng=gaugeRange(),X=d=>mid+(d/rng)*(Rr-mid),ink=css('--ink'),mut=css('--muted');
-  let g=`<line x1="${L}" y1="30" x2="${Rr}" y2="30" stroke="${ink}" stroke-width="1"/>`;
-  if(R&&R.hasShift){const a=Math.max(-rng,R.tolLo*DEG),b=Math.min(rng,R.tolHi*DEG);g+=`<rect x="${X(a)}" y="25" width="${X(b)-X(a)}" height="10" rx="5" fill="${css('--hot')}" fill-opacity=".35"/>`;}
-  g+=`<rect x="${X(-TOL)}" y="22" width="${Math.max(4,X(TOL)-X(-TOL))}" height="16" rx="3" fill="${css('--ok')}"/>`;
-  [-1,-.5,0,.5,1].forEach(f=>{const x=X(f*rng);g+=`<line x1="${x}" y1="38" x2="${x}" y2="44" stroke="${ink}"/><text x="${x}" y="56" fill="${mut}" font-family="DM Mono, monospace" font-size="10" text-anchor="middle">${f===0?'cible':sgn(f*rng,1)}</text>`;});
+  const svg=$('gauge'),W=340,L=14,Rr=W-14,ink=css('--ink'),mut=css('--muted');
+  let g=gaugeBase(30,16,R&&R.hasShift?clamp(R.tolLo*DEG,-20,20):null,R&&R.hasShift?clamp(R.tolHi*DEG,-20,20):null);
   g+=`<g id="needle"><polygon points="0,16 -6,5 6,5" fill="${ink}"/><line x1="0" y1="16" x2="0" y2="40" stroke="${ink}" stroke-width="2"/></g>`;
   g+=`<text x="${L}" y="72" fill="${mut}" font-family="Jost, sans-serif" font-size="11">vise trop bas</text><text x="${Rr}" y="72" fill="${mut}" font-family="Jost, sans-serif" font-size="11" text-anchor="end">vise trop haut</text>`;
-  svg.innerHTML=g;svg.dataset.rng=rng;
-}
-function drawNeedle(d){const n=document.getElementById('needle');if(!n)return;const W=340,mid=W/2,Rr=W-14,rng=+$('gauge').dataset.rng||5,dd=Math.max(-rng,Math.min(rng,d));n.setAttribute('transform',`translate(${mid+(dd/rng)*(Rr-mid)},0)`);}
-const RRNG=3;
-function drawRollGauge(){
-  const svg=$('rgauge'),W=340,L=14,Rr=W-14,mid=W/2,X=d=>mid+(d/RRNG)*(Rr-mid),ink=css('--ink'),mut=css('--muted');
-  let g=`<line x1="${L}" y1="24" x2="${Rr}" y2="24" stroke="${ink}" stroke-width="1"/>`;
-  g+=`<rect x="${X(-2*TOL)}" y="19" width="${X(2*TOL)-X(-2*TOL)}" height="10" rx="5" fill="${css('--hot')}" fill-opacity=".35"/>`;
-  g+=`<rect x="${X(-TOL)}" y="16" width="${X(TOL)-X(-TOL)}" height="16" rx="3" fill="${css('--ok')}"/>`;
-  [-3,-1.5,0,1.5,3].forEach(v=>{const x=X(v);g+=`<line x1="${x}" y1="32" x2="${x}" y2="38" stroke="${ink}"/><text x="${x}" y="50" fill="${mut}" font-family="DM Mono, monospace" font-size="10" text-anchor="middle">${v===0?'0°':sgn(v,1)}</text>`;});
-  g+=`<g id="rneedle"><polygon points="0,12 -6,1 6,1" fill="${ink}"/><line x1="0" y1="12" x2="0" y2="34" stroke="${ink}" stroke-width="2"/></g>`;
-  g+=`<text x="${L}" y="61" fill="${mut}" font-family="Jost, sans-serif" font-size="11">gauche plus bas</text><text x="${Rr}" y="61" fill="${mut}" font-family="Jost, sans-serif" font-size="11" text-anchor="end">droite plus bas</text>`;
   svg.innerHTML=g;
 }
-function drawRollNeedle(r){const n=document.getElementById('rneedle');if(!n)return;const W=340,mid=W/2,Rr=W-14,rr=Math.max(-RRNG,Math.min(RRNG,r));n.setAttribute('transform',`translate(${mid+(rr/RRNG)*(Rr-mid)},0)`);}
+function drawNeedle(d){const n=document.getElementById('needle');if(!n)return;n.setAttribute('transform',`translate(${GX(d,14,326)},0)`);}
+function drawRollGauge(){
+  const svg=$('rgauge'),W=340,L=14,Rr=W-14,ink=css('--ink'),mut=css('--muted');
+  let g=gaugeBase(24,16,-2*TOL,2*TOL);
+  g+=`<g id="rneedle"><polygon points="0,12 -6,1 6,1" fill="${ink}"/><line x1="0" y1="12" x2="0" y2="34" stroke="${ink}" stroke-width="2"/></g>`;
+  g+=`<text x="${L}" y="64" fill="${mut}" font-family="Jost, sans-serif" font-size="11">gauche plus bas</text><text x="${Rr}" y="64" fill="${mut}" font-family="Jost, sans-serif" font-size="11" text-anchor="end">droite plus bas</text>`;
+  svg.innerHTML=g;
+}
+function drawRollNeedle(r){const n=document.getElementById('rneedle');if(!n)return;n.setAttribute('transform',`translate(${GX(r,14,326)},0)`);}
 
 let wake=null;
 async function start(){
