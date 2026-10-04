@@ -221,7 +221,7 @@ nav.tabs{gap:22px}
       </div>
       <div class="alerts" id="pMsgs"></div>
       <figure class="view" style="padding-top:16px">
-        <span class="drag-hint">Fais glisser le point noir dans la zone colorée</span>
+        <span class="drag-hint">Fais glisser le point noir : il reste dans la zone d'accroche</span>
         <svg id="zoneView" viewBox="0 0 360 250" role="img" aria-label="Zone d'accroche, vue de profil. Le point noir est déplaçable."></svg>
         <div class="legend">
           <span><i class="fill"></i>tilt, keystone ≤ confort</span>
@@ -500,14 +500,13 @@ function drawZone(C,keepScale){
   const D=+$('dist').value,Hp=(+$('trim').value)-C.drop;
   const okP=D>0&&Number.isFinite(Hp);
   if(!keepScale||!ZV){
-    // cadrage serré : juste ce qu'il faut pour l'écran, la zone confort, la bande sans tilt et le point
-    const maxK=Math.max(...Z.map(z=>z.kUp)),maxC=Math.max(...Z.map(z=>z.cUp));
-    const want=Math.max(T.top,C.Hp0,C.band?C.band[1]:0,okP?Hp:0,maxC)+0.6;
-    const yTop=Math.max(T.top+0.4,Math.min(want,maxK+0.3,okP?Math.max(maxK+0.3,Hp+0.6):Infinity));
-    const xMax=Math.max(C.Dmax,okP?D:0)*1.03+0.3;
+    // cadrage : toute la zone d'accroche (keystone ≤ max) + l'écran, quel que soit le point
+    const maxK=Math.max(...Z.map(z=>z.kUp));
+    const yTop=Math.max(T.top,maxK,C.Hp0,C.band?C.band[1]:0)+0.5;
+    const xMax=C.Dmax*1.03+0.3;
     const padL=8,padR=14,padT=24,padB=22;
     let k=(W-padL-padR)/xMax,Ht=yTop*k+padT+padB;
-    if(Ht>340){Ht=340;k=(Ht-padT-padB)/yTop;}
+    if(Ht>380){Ht=380;k=(Ht-padT-padB)/yTop;}
     if(Ht<190)Ht=190;
     ZV={k,yTop,xMax,W,Ht,x0:W-padR,y0:Ht-padB};
     svg.setAttribute('viewBox',`0 0 ${W} ${Math.round(Ht)}`);
@@ -541,6 +540,14 @@ function drawZone(C,keepScale){
   }
   svg.innerHTML=g;
 }
+// bornes haute/basse de la zone (keystone ≤ max) à une distance donnée
+function zoneAt(D){
+  const Z=Zc;if(!Z)return null;
+  if(Z.length<2||Z[Z.length-1].D-Z[0].D<0.02)return{D:Z[0].D,up:Z[0].kUp,dn:Math.max(0,Z[0].kDn)};
+  const d=clamp(D,Z[0].D,Z[Z.length-1].D);let i=0;while(i<Z.length-2&&Z[i+1].D<d)i++;
+  const a=Z[i],b=Z[i+1],t=clamp((d-a.D)/(b.D-a.D),0,1);
+  return{D:d,up:a.kUp+(b.kUp-a.kUp)*t,dn:Math.max(0,a.kDn+(b.kDn-a.kDn)*t)};
+}
 // zone tactile : le point lui-même, ou l'intérieur de la zone d'accroche (keystone ≤ max)
 function inZone(C,w){
   const Z=Zc;if(!Z||!w)return false;
@@ -558,7 +565,9 @@ function inZone(C,w){
   const toWorld=(x,y)=>{const pt=svg.createSVGPoint();pt.x=x;pt.y=y;const m=svg.getScreenCTM();if(!m||!ZV)return null;
     const q=pt.matrixTransform(m.inverse());return{D:(ZV.x0-q.x)/ZV.k,Hp:(ZV.y0-q.y)/ZV.k};};
   const apply=()=>{raf=0;if(!pend)return;const C=common();if(!C)return;
-    const D=clamp(Math.round(pend.D*20)/20,0.5,ZV.xMax),Hp=clamp(Math.round(pend.Hp*20)/20,0,ZV.yTop);
+    // le point reste dans la zone d'accroche : distance dans la plage du zoom, hauteur entre les deux limites de keystone
+    const z=zoneAt(pend.D);if(!z)return;
+    const D=Math.round(z.D*100)/100,Hp=clamp(Math.round(pend.Hp*20)/20,Math.ceil(z.dn*100)/100,Math.floor(z.up*100)/100);
     $('dist').value=D.toFixed(2);$('trim').value=H(C,Hp).toFixed(2);update(true);};
   // le défilement n'est bloqué que si le doigt se pose dans la zone
   svg.addEventListener('touchstart',e=>{const C=common(),t=e.touches[0];if(C&&t&&inZone(C,toWorld(t.clientX,t.clientY)))e.preventDefault();},{passive:false});
