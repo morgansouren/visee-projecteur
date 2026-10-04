@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest?v=2">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192-v2.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v2.png">
 <meta name="theme-color" content="#93cfd3">
 <title>Visée Projecteur</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -120,6 +120,22 @@ ol.steps li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:
 ol.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-size:13px;font-weight:500}
 .status{font-size:13.5px;color:var(--muted);text-align:center}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+/* additions : onglet Préparer, schéma interactif */
+.hero .big.sm{font-size:clamp(46px,13vw,76px)}
+.hero .big small{font-size:.4em;-webkit-text-fill-color:var(--muted);color:var(--muted)}
+.rows li.bad>b{color:var(--bad)} .rows li.warn>b{color:var(--warn)} .rows li.okk>b{color:var(--ok)}
+.rows li>b small{font-family:var(--f-num);font-size:12px;color:var(--muted);font-weight:400;display:block}
+.rows li.sub>span{padding-left:14px;text-transform:none;letter-spacing:.02em;font-size:14.5px}
+.rows li.grp{border-bottom:0;padding-bottom:2px}
+.rows li.grp>span{font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:0;border-top:2px solid;vertical-align:middle;margin-right:6px}
+.legend i.fill{height:10px;border:1px solid var(--mag);background:linear-gradient(90deg,var(--hot),var(--mag));opacity:.6}
+.legend i.fill2{height:10px;border:1px solid var(--mag);background:linear-gradient(90deg,var(--hot),var(--mag));opacity:.25}
+#zoneView{touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none}
+.drag-hint{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+nav.tabs{gap:22px}
+@media (max-width:380px){nav.tabs button{font-size:17px}}
 </style>
 </head>
 <body>
@@ -131,23 +147,25 @@ ol.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;
   <div class="band" aria-hidden="true"><canvas id="bandC"></canvas></div>
   <header class="brand" style="margin-top:-74px">
     <h1>Visée <i>Projecteur</i></h1>
-    <p>Tilt réglé au sol · shift en réserve</p>
+    <p>Préparer l'accroche · régler au sol</p>
   </header>
 
   <nav class="tabs" role="tablist">
-    <button id="tab-calc" role="tab" aria-selected="true" aria-controls="pane-calc">Calcul</button>
+    <button id="tab-prep" role="tab" aria-selected="true" aria-controls="pane-prep">Préparer</button>
+    <button id="tab-calc" role="tab" aria-selected="false" aria-controls="pane-calc">Calcul</button>
     <button id="tab-mes" role="tab" aria-selected="false" aria-controls="pane-mes">Mesure</button>
   </nav>
 
-  <!-- ============ CALCUL ============ -->
-  <div id="pane-calc" role="tabpanel" class="wrap" style="gap:28px">
+  <!-- ============ COMMUN : écran + projecteur ============ -->
+  <div id="shared" class="wrap" style="gap:28px">
     <section class="block">
       <div class="bhead"><h2>Écran</h2><span id="centerHint"></span></div>
       <div class="fields">
         <label class="f"><span>Largeur <em>m</em></span><input id="sw" type="number" step="0.01" inputmode="decimal" value="6.00"></label>
-        <label class="f"><span>Hauteur <em>m</em></span><input id="sh" type="number" step="0.01" inputmode="decimal" value="3.38"></label>
-        <label class="f"><span>Bas / sol <em>m</em></span><input id="sb" type="number" step="0.01" inputmode="decimal" value="1.20"></label>
+        <label class="f"><span>Hauteur <em>m</em></span><input id="sh" type="number" step="0.01" inputmode="decimal" value="3.00"></label>
+        <label class="f"><span>Bas écran / sol <em>m</em></span><input id="sb" type="number" step="0.01" inputmode="decimal" value="1.20"></label>
       </div>
+      <p class="note" id="coverHint"></p>
     </section>
 
     <section class="block">
@@ -179,15 +197,56 @@ ol.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;
             <button type="button" data-v="mid" aria-pressed="false">Milieu de course</button>
           </div></div>
       </div>
+      <div class="fields">
+        <label class="f" id="boxDrop"><span>Objectif sous le truss <em>m</em></span><input id="drop" type="number" step="0.01" inputmode="decimal" value="0.35"></label>
+        <label class="f"><span>Keystone confort <em>%</em></span><input id="ksComf" type="number" step="1" inputmode="decimal" value="5"></label>
+        <label class="f"><span>Keystone max <em>%</em></span><input id="ksMax" type="number" step="1" inputmode="decimal" value="10"></label>
+      </div>
       <p class="note" id="refHint"></p>
+    </section>
+  </div>
+
+  <!-- ============ PRÉPARER ============ -->
+  <div id="pane-prep" role="tabpanel" class="wrap" style="gap:28px">
+    <section class="block" aria-live="polite">
+      <div class="bhead"><h2>Zone d'accroche</h2><span id="pZoomHead"></span></div>
+      <div class="hero">
+        <span class="k">Distance pour couvrir l'écran, sans tilt</span>
+        <span class="big sm" id="pDist">–</span>
+        <span class="sentence" id="pSentence"></span>
+      </div>
+      <div class="alerts" id="pMsgs"></div>
+      <figure class="view" style="padding-top:16px">
+        <span class="drag-hint">Déplace le point noir : position du projecteur</span>
+        <svg id="zoneView" viewBox="0 0 360 250" role="img" aria-label="Zone d'accroche, vue de profil. Le point noir est déplaçable."></svg>
+        <div class="legend">
+          <span><i class="fill"></i>tilt, keystone ≤ confort</span>
+          <span><i class="fill2"></i>tilt, keystone ≤ max</span>
+          <span><i style="border-color:var(--hot);border-top-width:3px"></i>sans tilt (shift)</span>
+          <span><i style="border-color:var(--ink);border-top-style:dashed"></i>idéale</span>
+        </div>
+      </figure>
+    </section>
+
+    <section class="block" aria-live="polite">
+      <div class="bhead"><h2>Position choisie</h2><span id="ptHead"></span></div>
+      <ul class="rows" id="ptRows"></ul>
     </section>
 
     <section class="block">
-      <div class="bhead"><h2>Position</h2></div>
+      <div class="bhead"><h2>Hauteurs à cette distance</h2><span id="htHead"></span></div>
+      <ul class="rows" id="htRows"></ul>
+      <p class="note" id="htNote"></p>
+    </section>
+  </div>
+
+  <!-- ============ CALCUL ============ -->
+  <div id="pane-calc" role="tabpanel" class="wrap" style="gap:28px" hidden>
+    <section class="block">
+      <div class="bhead"><h2>Position</h2><span>synchronisée avec Préparer</span></div>
       <div class="fields">
-        <label class="f"><span>Truss, bas <em>m</em></span><input id="trim" type="number" step="0.01" inputmode="decimal" value="7.50"></label>
-        <label class="f"><span>Objectif sous truss <em>m</em></span><input id="drop" type="number" step="0.01" inputmode="decimal" value="0.35"></label>
-        <label class="f"><span>Objectif → écran <em>m</em></span><input id="dist" type="number" step="0.01" inputmode="decimal" value="11.00"></label>
+        <label class="f"><span id="lblTrim">Truss, bas <em>m</em></span><input id="trim" type="number" step="0.01" inputmode="decimal" value="7.50"></label>
+        <label class="f"><span>Objectif → écran <em>m</em></span><input id="dist" type="number" step="0.01" inputmode="decimal" value="12.00"></label>
       </div>
       <p class="note">Distance horizontale mesurée au sol, à l'aplomb de l'objectif. Projecteur dans l'axe de l'écran, pan réglé à l'œil.</p>
     </section>
@@ -207,10 +266,16 @@ ol.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;
           <figcaption>Profil. Le trait épais à droite de l'écran montre ce que le shift peut encore atteindre.</figcaption>
         </figure>
         <figure class="view">
-          <svg id="frontView" viewBox="0 0 360 230" role="img" aria-label="Vue de face, déformation trapézoïdale"></svg>
-          <figcaption>Face. Image projetée avant correction géométrique, sur le cadre de l'écran.</figcaption>
+          <svg id="frontView" viewBox="0 0 360 250" role="img" aria-label="Vue de face : écran, limites du zoom et image projetée"></svg>
+          <div class="legend">
+            <span><i style="border-color:var(--ink)"></i>écran</span>
+            <span><i class="fill"></i>image au meilleur zoom</span>
+            <span><i style="border-color:var(--ink);border-top-style:dashed"></i>limites du zoom</span>
+          </div>
         </figure>
       </div>
+      <ul class="rows" id="rCover" style="padding-top:10px"></ul>
+      <p class="note" id="rCoverNote"></p>
     </section>
   </div>
 
@@ -239,7 +304,7 @@ ol.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;
       <ol class="steps">
         <li><span>À plat sur le capot du projecteur, <b>haut du GSM vers l'objectif</b>, aligné sur l'axe optique.</span></li>
         <li><span>Lève le haut du GSM : la valeur doit augmenter. Baisse le côté droit : le roll part vers « droite plus bas ». Sinon, inverse le sens.</span></li>
-        <li><span>Tilt au vert, puis roll au vert (±0,2°). Une fois en l'air, repose le GSM pour vérifier le roll : des palans à des hauteurs différentes font rouler le truss.</span></li>
+        <li><span>Tilt au vert, puis roll au vert (±0,5°). Une fois en l'air, repose le GSM pour vérifier le roll : des palans à des hauteurs différentes font rouler le truss.</span></li>
       </ol>
       <div class="btns"><button class="btn" id="bFlip" type="button">Inverser le sens</button></div>
     </section>
@@ -262,8 +327,7 @@ ol.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;
         <button class="btn" id="bTrussClr" type="button" disabled>Revenir à la gravité</button>
       </div>
     </section>
-  </div>
-</div>
+  </div></div>
 
 <script>
 (function(){
@@ -273,7 +337,7 @@ const fmt=(v,d=1)=>Number.isFinite(v)?v.toLocaleString('fr-BE',{minimumFractionD
 const sgn=(v,d=1)=>Number.isFinite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),d):'–';
 const DEG=180/Math.PI;
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 /* ---------- Motif : barres verticales floues orange → magenta ---------- */
 function stripes(cv,side){
   const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);
@@ -281,27 +345,21 @@ function stripes(cv,side){
   cv.width=r.width*dpr;cv.height=r.height*dpr;
   const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,r.width,r.height);
   const W=r.width,H=r.height,hot=css('--hot'),mag=css('--mag'),vio=css('--violet');
-  const band=side==='band';
-  const n=band?Math.round(W/9):22;
+  const band=side==='band',n=band?Math.round(W/9):22;
   c.filter='blur('+(band?2.2:3)+'px)';
   for(let i=0;i<n;i++){
-    const t=i/(n-1);
-    let x,w,alpha;
+    const t=i/(n-1);let x,w,alpha;
     if(band){x=t*W;const d=Math.abs(t-.5)*2;w=2+7*Math.pow(d,1.6);alpha=.25+.75*Math.pow(d,1.2);}
-    else{const e=side==='l'?t:1-t; x=side==='l'?(1-Math.pow(e,.8))*W:Math.pow(1-e,.8)*W; w=2+10*(1-e)**1.4; alpha=.2+.8*(1-e);}
+    else{const e=side==='l'?t:1-t;x=side==='l'?(1-Math.pow(e,.8))*W:Math.pow(1-e,.8)*W;w=2+10*(1-e)**1.4;alpha=.2+.8*(1-e);}
     const g=c.createLinearGradient(0,0,0,H);
-    const top=band?0:.08+.12*Math.sin(i*1.7)**2, bot=band?1:.92-.12*Math.cos(i*1.3)**2;
-    const mixMag=band?(t):(side==='l'?0:1);
-    g.addColorStop(top,'transparent');
-    g.addColorStop(top+(bot-top)*.25,mixMag>.5?vio:hot);
-    g.addColorStop(top+(bot-top)*.55,mixMag>.5?mag:hot);
-    g.addColorStop(top+(bot-top)*.8,mag);
-    g.addColorStop(bot,'transparent');
+    const top=band?0:.08+.12*Math.sin(i*1.7)**2,bot=band?1:.92-.12*Math.cos(i*1.3)**2;
+    const magSide=band?t>.5:side==='r';
+    g.addColorStop(top,'transparent');g.addColorStop(top+(bot-top)*.25,magSide?vio:hot);
+    g.addColorStop(top+(bot-top)*.55,magSide?mag:hot);g.addColorStop(top+(bot-top)*.8,mag);g.addColorStop(bot,'transparent');
     c.globalAlpha=alpha;c.fillStyle=g;c.fillRect(x-w/2,0,w,H);
   }
   c.globalAlpha=1;c.filter='none';
-  if(band){const f=c.createLinearGradient(0,0,0,H);f.addColorStop(0,'rgba(0,0,0,0)');f.addColorStop(1,css('--bg'));c.globalCompositeOperation='source-over';
-    c.fillStyle=f;c.fillRect(0,H*.35,W,H*.65);}
+  if(band){const f=c.createLinearGradient(0,0,0,H);f.addColorStop(0,'rgba(0,0,0,0)');f.addColorStop(1,css('--bg'));c.fillStyle=f;c.fillRect(0,H*.35,W,H*.65);}
 }
 function paintMotif(){stripes($('bandC'),'band');stripes($('sideL'),'l');stripes($('sideR'),'r');}
 
@@ -323,7 +381,7 @@ const PROFILES={
     lenses:[{name:'Zoom intégré 1,22–1,46:1',min:1.22,max:1.46}]},
   custom:{name:'Autre modèle (manuel)',custom:true,lenses:[{name:'Valeurs saisies',min:1.5,max:2}]}
 };
-const S={mount:'inv',ref:'zero'};
+const S={mount:'inv',ref:'zero',tab:'prep'};
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
 /* ---------- UI ---------- */
@@ -335,9 +393,10 @@ function fillLenses(){const p=PROFILES[modelSel.value];lensSel.innerHTML='';
 function syncSeg(id,key){$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S[key]?'true':'false'));}
 function segInit(id,key){$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S[key]=b.dataset.v;syncSeg(id,key);update();});}
 segInit('mountSeg','mount');segInit('refSeg','ref');
-const FIELDS=['sw','sh','sb','trim','drop','dist','cAsp','cTrMin','cTrMax','cShMin','cShMax','cOff'];
-const saved=store.get('vp-inputs');
-if(saved){FIELDS.forEach(f=>{if(saved[f]!=null&&$(f))$(f).value=saved[f];});if(saved.model&&PROFILES[saved.model])modelSel.value=saved.model;if(saved.mount)S.mount=saved.mount;if(saved.ref)S.ref=saved.ref;}
+const FIELDS=['sw','sh','sb','trim','drop','dist','ksComf','ksMax','cAsp','cTrMin','cTrMax','cShMin','cShMax','cOff'];
+const saved=store.get('vp-inputs-v6');
+if(saved){FIELDS.forEach(f=>{if(saved[f]!=null&&$(f))$(f).value=saved[f];});if(saved.model&&PROFILES[saved.model])modelSel.value=saved.model;
+  ['mount','ref','tab'].forEach(k=>{if(saved[k])S[k]=saved[k];});}
 fillLenses();if(saved&&saved.lens!=null&&lensSel.options[saved.lens])lensSel.value=saved.lens;
 syncSeg('mountSeg','mount');syncSeg('refSeg','ref');
 modelSel.addEventListener('change',()=>{fillLenses();update();});
@@ -351,113 +410,290 @@ function profile(){const k=modelSel.value,p=PROFILES[k];
    x latéral, y vertical, z vers l'écran (plan z = D). Tilt θ (+ = vers le haut).
    Haut du boîtier b = s·(0,cosθ,−sinθ), s = +1 à l'endroit, −1 inversé.
    À distance unitaire : image 1/TR de large, h = 1/(TR·aspect) de haut,
-   centre décalé de v_c = (offset+shift)·h selon b → rayon central : pente tan(θ + s·atan(v_c)). */
+   centre décalé de v_c = o·h selon b (o = offset + shift, en fraction de hauteur d'image).
+   Critère : l'image (trapèze) doit CONTENIR tout l'écran ; on cherche le plus petit
+   zoom-image qui y parvient (throw le plus long). Sans tilt, le centre de l'image est à
+   Hp + s·o·Himage : il ne dépend pas de la distance. */
 function project(th,s,Hp,D,xi,yi){const dy=Math.sin(th)+yi*s*Math.cos(th),dz=Math.cos(th)-yi*s*Math.sin(th);if(dz<=1e-6)return null;const t=D/dz;return{x:t*xi,y:Hp+t*dy};}
-function solve(){
-  const p=profile();
-  const sw=+$('sw').value,sh=+$('sh').value,sb=+$('sb').value,trim=+$('trim').value,drop=+$('drop').value,D=+$('dist').value;
-  if(!(sw>0&&sh>0&&D>0&&p.aspect>0&&Number.isFinite(sb)&&Number.isFinite(trim)))return null;
-  const asp=p.aspect;let Wi=sw,Hi=sw/asp;if(Hi>sh){Hi=sh;Wi=sh*asp;}
-  const Hc=sb+sh/2,Hp=trim-(drop||0),s=S.mount==='inv'?-1:1;
-  const hasShift=p.shMax!==p.shMin, shRef=(hasShift&&S.ref==='mid')?(p.shMin+p.shMax)/2:0, o=(p.offset+shRef)/100;
-  const phi=Math.atan((Hc-Hp)/D);
-  let TR=D/Wi,th=0;
-  for(let i=0;i<40;i++){const h=1/TR/asp,vc=o*h;th=phi-s*Math.atan(vc);
-    const a=project(th,s,Hp,D,0,vc+h/2),b=project(th,s,Hp,D,0,vc-h/2);if(!a||!b)return null;
-    const n=TR*Math.abs(a.y-b.y)/Hi;if(Math.abs(n-TR)<1e-9){TR=n;break;}TR=n;}
-  const w=1/TR,h=w/asp,vc=o*h;th=phi-s*Math.atan(vc);
+function target(p){
+  const sw=+$('sw').value,sh=+$('sh').value,sb=+$('sb').value,asp=p.aspect;
+  if(!(sw>0&&sh>0&&asp>0&&Number.isFinite(sb)))return null;
+  const Wc=Math.max(sw,sh*asp),Hcov=Wc/asp; // image qui couvre l'écran, sans tilt
+  return{sw,sh,sb,Wc,Hcov,Hc:sb+sh/2,top:sb+sh};
+}
+function trap(th,TR,asp,o,s,Hp,D){
+  const w=1/TR,h=w/asp,vc=o*h;
   const c=[[-w/2,vc+h/2],[w/2,vc+h/2],[w/2,vc-h/2],[-w/2,vc-h/2]].map(([x,y])=>project(th,s,Hp,D,x,y));
   if(c.some(v=>!v))return null;
+  const yA=c[0].y,yB=c[2].y,wA=Math.abs(c[1].x-c[0].x),wB=Math.abs(c[2].x-c[3].x),top=yA>yB;
+  return{c,yTop:top?yA:yB,yBot:top?yB:yA,wTop:top?wA:wB,wBot:top?wB:wA,ks:Math.abs(1-Math.min(wA,wB)/Math.max(wA,wB))*100};
+}
+const widthAt=(t,y)=>t.wBot+(t.wTop-t.wBot)*(y-t.yBot)/(t.yTop-t.yBot);
+function covers(t,T){return t&&t.yTop>=T.top-1e-6&&t.yBot<=T.sb+1e-6&&widthAt(t,T.top)>=T.sw-1e-6&&widthAt(t,T.sb)>=T.sw-1e-6;}
+// throw (zoom) le plus long qui couvre encore tout l'écran, centre de l'image visé sur le centre de l'écran
+function cover(T,asp,o,s,Hp,D){
+  const phi=Math.atan((T.Hc-Hp)/D);
+  const at=TR=>{const h=1/TR/asp,th=phi-s*Math.atan(o*h);return{th,h,t:trap(th,TR,asp,o,s,Hp,D)};};
+  let lo=0.25,hi=Math.max(1,D/T.Wc*3);
+  if(!covers(at(lo).t,T))return null;
+  for(let i=0;i<40;i++){const m=(lo+hi)/2;if(covers(at(m).t,T))lo=m;else hi=m;}
+  const r=at(lo);return{TR:lo,th:r.th,h:r.h,t:r.t,phi};
+}
+function ksAt(T,asp,o,s,Hp,D){const f=cover(T,asp,o,s,Hp,D);return f?f.t.ks:Infinity;}
+// hauteur extrême dans une direction (+1 haut, −1 bas) qui garde le keystone ≤ K
+function limit(T,asp,o,s,D,Hp0,K,dir){
+  const ok=Hp=>ksAt(T,asp,o,s,Hp,D)<=K;
+  const cap=D*Math.tan(55/DEG);
+  const span=dir>0?Math.min(30,cap):Math.max(0,Math.min(Hp0,cap));
+  if(span<=0)return{H:Hp0,capped:false};
+  if(ok(Hp0+dir*span))return{H:Hp0+dir*span,capped:true};
+  let lo=0,hi=span;for(let i=0;i<22;i++){const m=(lo+hi)/2;if(ok(Hp0+dir*m))lo=m;else hi=m;}
+  return{H:Hp0+dir*lo,capped:false};
+}
+function common(){
+  const p=profile(),T=target(p);if(!T||!(p.lens.min>0&&p.lens.max>=p.lens.min))return null;
+  const s=S.mount==='inv'?-1:1,hasShift=p.shMax!==p.shMin;
+  const shRef=(hasShift&&S.ref==='mid')?(p.shMin+p.shMax)/2:0,o=(p.offset+shRef)/100;
+  const drop=S.mount==='inv'?(+$('drop').value||0):0;
+  const K=Math.max(0.5,+$('ksMax').value||10),K2=Math.min(K,Math.max(0.2,+$('ksComf').value||5));
+  const Hp0=T.Hc-s*o*T.Hcov;
+  let band=null;
+  if(hasShift){const a=T.Hc-s*(p.offset+p.shMin)/100*T.Hcov,b=T.Hc-s*(p.offset+p.shMax)/100*T.Hcov;band=[Math.min(a,b),Math.max(a,b)];}
+  return{p,T,s,hasShift,shRef,o,drop,K,K2,asp:p.aspect,Hp0,band,dir:s<0?1:-1,
+    Dmin:p.lens.min*T.Wc,Dmax:p.lens.max*T.Wc};
+}
+const H=(C,v)=>v+C.drop; // hauteur affichée : bas du truss si suspendu, objectif sinon
+
+/* ---------- Préparer : zone (calculée quand les réglages changent) ---------- */
+let Zc=null,ZcKey='';
+function zone(C){
+  const key=JSON.stringify([C.T,C.o,C.s,C.K,C.K2,C.p.lens,C.asp]);
+  if(key===ZcKey&&Zc)return Zc;
+  const{T,asp,o,s,Hp0,K,K2}=C,pts=[],n=20;
+  const d0=C.Dmin,d1=C.Dmax;
+  for(let i=0;i<=n;i++){const D=d0+(d1-d0)*i/n;
+    pts.push({D,kUp:limit(T,asp,o,s,D,Hp0,K,1).H,kDn:limit(T,asp,o,s,D,Hp0,K,-1).H,cUp:limit(T,asp,o,s,D,Hp0,K2,1).H,cDn:limit(T,asp,o,s,D,Hp0,K2,-1).H});}
+  Zc=pts;ZcKey=key;return pts;
+}
+let ZV=null; // transformation du schéma, figée pendant le glissé
+let dragging=false;
+function drawZone(C,keepScale){
+  const svg=$('zoneView'),W=360,Ht=250,pad=18,{T}=C,ink=css('--ink');
+  const Z=zone(C);
+  const D=+$('dist').value,Hp=(+$('trim').value)-C.drop;
+  if(!keepScale||!ZV){
+    const maxUp=Math.max(...Z.map(z=>z.kUp));
+    const yTop=Math.min(Math.max(T.top,C.Hp0,C.band?C.band[1]:0,Number.isFinite(Hp)?Hp:0)+3,Math.max(maxUp,T.top+1)+0.5);
+    const xMax=Math.max(C.Dmax*1.2,Number.isFinite(D)?D*1.08:0)+0.5;
+    const k=Math.min((W-2*pad-14)/xMax,(Ht-2*pad-18)/yTop);
+    ZV={k,yTop,xMax,x0:W-pad-8,y0:Ht-pad-18};
+  }
+  const{k,yTop,x0,y0}=ZV;
+  const X=d=>x0-d*k,Y=y=>y0-Math.min(Math.max(y,0),yTop)*k;
+  let g=beamDefs('bz');
+  g+=`<line x1="${pad/2}" y1="${Y(0)}" x2="${W-pad/2}" y2="${Y(0)}" stroke="${ink}"/>`;
+  const poly=(up,dn)=>Z.map(z=>`${X(z.D)},${Y(z[up])}`).concat(Z.slice().reverse().map(z=>`${X(z.D)},${Y(z[dn])}`)).join(' ');
+  if(C.Dmax-C.Dmin>0.02){
+    g+=`<polygon points="${poly('kUp','kDn')}" fill="url(#bz)" fill-opacity=".45" stroke="${css('--mag')}" stroke-width=".8" stroke-dasharray="3 3"/>`;
+    g+=`<polygon points="${poly('cUp','cDn')}" fill="url(#bz)" stroke="${css('--mag')}" stroke-width="1"/>`;
+  }else{
+    g+=`<line x1="${X(C.Dmin)}" y1="${Y(Z[0].kUp)}" x2="${X(C.Dmin)}" y2="${Y(Z[0].kDn)}" stroke="${css('--mag')}" stroke-width="8" stroke-opacity=".35"/>`;
+  }
+  if(C.band)g+=`<rect x="${X(C.Dmax)}" y="${Y(C.band[1])}" width="${Math.max(3,X(C.Dmin)-X(C.Dmax))}" height="${Math.max(3,Y(C.band[0])-Y(C.band[1]))}" fill="${css('--hot')}" fill-opacity=".3" stroke="${css('--hot')}" stroke-width="2"/>`;
+  g+=`<line x1="${X(C.Dmax)-6}" y1="${Y(C.Hp0)}" x2="${X(C.Dmin)+6}" y2="${Y(C.Hp0)}" stroke="${ink}" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  // bornes du zoom
+  [[C.Dmin,'grand-angle'],[C.Dmax,'télé']].forEach(([d,l],i)=>{if(i===1&&C.Dmax-C.Dmin<0.05)return;
+    g+=`<line x1="${X(d)}" y1="${Y(0)}" x2="${X(d)}" y2="${Y(0)+5}" stroke="${ink}"/>`+T_(X(d),Y(0)+16,`${fmt(d,1)}`,'middle');});
+  // écran
+  g+=`<line x1="${X(0)}" y1="${Y(T.sb)}" x2="${X(0)}" y2="${Y(T.top)}" stroke="${ink}" stroke-width="4"/>`;
+  g+=`<circle cx="${X(0)}" cy="${Y(T.Hc)}" r="3.5" fill="${css('--bg')}" stroke="${css('--mag')}" stroke-width="2"/>`;
+  // point déplaçable + repères
+  if(D>0&&Number.isFinite(Hp)){
+    const px=X(D),py=Y(Hp);
+    g+=`<line x1="${px}" y1="${py}" x2="${px}" y2="${Y(0)}" stroke="${ink}" stroke-width=".8" stroke-dasharray="2 3"/>`;
+    g+=`<line x1="${px}" y1="${py}" x2="${X(0)}" y2="${Y(T.Hc)}" stroke="${ink}" stroke-width=".8" stroke-opacity=".5"/>`;
+    g+=`<g id="zDot"><circle cx="${px}" cy="${py}" r="22" fill="transparent"/><circle cx="${px}" cy="${py}" r="${dragging?9:7}" fill="${ink}" stroke="${css('--bg')}" stroke-width="2"/></g>`;
+    const lx=px<70?px+12:px-12,anc=px<70?'start':'end';
+    g+=`<text x="${lx}" y="${Math.max(12,py-12)}" fill="${ink}" font-family="DM Mono, monospace" font-size="11" text-anchor="${anc}">${fmt(D,2)} m · ${fmt(H(C,Hp),2)} m</text>`;
+  }
+  svg.innerHTML=g;
+}
+// glisser le point
+(function(){
+  const svg=$('zoneView');let raf=0,pend=null;
+  const toWorld=e=>{const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const m=svg.getScreenCTM();if(!m||!ZV)return null;
+    const q=pt.matrixTransform(m.inverse());return{D:(ZV.x0-q.x)/ZV.k,Hp:(ZV.y0-q.y)/ZV.k};};
+  const apply=()=>{raf=0;if(!pend)return;const C=common();if(!C)return;
+    const D=clamp(Math.round(pend.D*20)/20,0.5,ZV.xMax),Hp=clamp(Math.round(pend.Hp*20)/20,0,ZV.yTop);
+    $('dist').value=D.toFixed(2);$('trim').value=H(C,Hp).toFixed(2);update(true);};
+  svg.addEventListener('pointerdown',e=>{dragging=true;try{svg.setPointerCapture(e.pointerId);}catch(_){}pend=toWorld(e);if(!raf)raf=requestAnimationFrame(apply);e.preventDefault();});
+  svg.addEventListener('pointermove',e=>{if(!dragging)return;pend=toWorld(e);if(!raf)raf=requestAnimationFrame(apply);});
+  const end=()=>{if(!dragging)return;dragging=false;update();};
+  svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
+})();
+
+function renderPrep(C,keepScale){
+  const{T,p}=C,inv=C.s<0,unit=inv?'truss':'objectif';
+  $('pDist').innerHTML=C.Dmax-C.Dmin>0.05?`${fmt(C.Dmin,1)}–${fmt(C.Dmax,1)}<small> m</small>`:`${fmt(C.Dmin,2)}<small> m</small>`;
+  $('pSentence').textContent=`Image ${fmt(T.Wc,2)} × ${fmt(T.Hcov,2)} m pour couvrir l'écran de ${fmt(T.sw,2)} × ${fmt(T.sh,2)} m, du zoom grand-angle au zoom télé.`;
+  $('pZoomHead').textContent=`throw ${fmt(p.lens.min,2)}–${fmt(p.lens.max,2)}:1`;
+  const msgs=$('pMsgs');msgs.innerHTML='';
+  if(inv&&C.Hp0<T.top&&!(C.band&&C.band[1]>=T.top))msgs.innerHTML+=`<div class="alert warn"><span>Sans tilt, l'objectif serait sous le haut de l'écran : en suspendu il faudra incliner.</span></div>`;
+  drawZone(C,keepScale);
+  // position choisie
+  const D=+$('dist').value,Hp=(+$('trim').value)-C.drop;
+  const rows=[],ht=[];
+  if(D>0&&Number.isFinite(Hp)){
+    const f=cover(T,C.asp,C.o,s_(C),Hp,D);
+    if(f){
+      const thD=f.th*DEG,ks=f.t.ks,inZ=f.TR>=p.lens.min-1e-6&&f.TR<=p.lens.max+1e-6;
+      const ksCls=ks<=C.K2?'okk':ks<=C.K?'warn':'bad';
+      rows.push(['',`Distance`,`${fmt(D,2)} m`],['',`Hauteur ${unit}`,`${fmt(H(C,Hp),2)} m`],
+        ['',`Tilt`,`${sgn(thD)}°`],[ksCls,`Keystone`,`${fmt(ks)} %<small>${ks<=C.K2?'confortable':ks<=C.K?'acceptable':'au-delà du max'}</small>`],
+        [inZ?'okk':f.TR<p.lens.min?'bad':'warn',`Zoom nécessaire`,`${fmt(f.TR,2)}:1<small>${inZ?'dans la plage':f.TR<p.lens.min?'trop près : l\'écran ne sera pas couvert':'trop loin : image plus grande que nécessaire'}</small>`]);
+      $('ptHead').textContent=inZ&&ks<=C.K?'faisable':'hors limites';
+    }else{rows.push(['bad','Position','géométrie impossible']);$('ptHead').textContent='';}
+    // hauteurs à cette distance
+    const lim=(K,d)=>limit(T,C.asp,C.o,C.s,D,C.Hp0,K,d);
+    const d=C.dir,word=d>0?'max':'min';
+    const fmtH=r=>(r.capped&&d>0?'> ':'')+(r.H<=0.01?'sol':fmt(H(C,r.H),2)+' m');
+    ht.push(['grp','Sans tilt','']);
+    ht.push(['sub','Idéale',`${fmt(H(C,C.Hp0),2)} m<small>shift ${C.hasShift?sgn(C.shRef,0)+' %':'—'}</small>`]);
+    if(C.band){const e=d>0?C.band[1]:C.band[0];ht.push(['sub',`${d>0?'Max':'Min'}, shift en butée`,`${fmt(H(C,e),2)} m<small>shift ${sgn(p.shMax,0)} %</small>`]);}
+    ht.push(['grp','Avec tilt, shift en réserve','']);
+    const rc=lim(C.K2,d),rk=lim(C.K,d);
+    const thOf=Hh=>{const f=cover(T,C.asp,C.o,C.s,Hh,D);return f?sgn(f.th*DEG)+'°':'–';};
+    ht.push(['sub',`Idéale, ${word} (keystone ${fmt(C.K2,0)} %)`,`${fmtH(rc)}<small>tilt ${thOf(rc.H)}</small>`]);
+    ht.push(['sub',`Limite, ${word} (keystone ${fmt(C.K,0)} %)`,`${fmtH(rk)}<small>tilt ${thOf(rk.H)}</small>`]);
+    $('htHead').textContent=`à ${fmt(D,2)} m · ${unit}`;
+  }
+  $('ptRows').innerHTML=rows.map(([c,a,b])=>`<li class="${c}"><span>${a}</span><b>${b}</b></li>`).join('');
+  $('htRows').innerHTML=ht.map(([c,a,b])=>`<li class="${c}"><span>${a}</span><b>${b}</b></li>`).join('');
+  $('htNote').textContent=`Sans tilt, la hauteur ne dépend pas de la distance : la position verticale de l'image ne dépend que de l'offset et du shift. Avec tilt, plus on est loin, plus on peut ${inv?'monter':'descendre'} pour le même keystone.`;
+}
+const s_=C=>C.s;
+
+const T_=(x,y,txt,anc='start',size=10)=>`<text x="${x}" y="${y}" fill="${css('--muted')}" font-family="DM Mono, monospace" font-size="${size}" text-anchor="${anc}">${txt}</text>`;
+function beamDefs(id){return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${css('--hot')}" stop-opacity=".55"/><stop offset="1" stop-color="${css('--mag')}" stop-opacity=".35"/></linearGradient></defs>`;}
+
+/* ---------- Calcul ---------- */
+let R=null;
+function solve(C){
+  const{p,T,s,o,asp}=C;const trim=+$('trim').value,D=+$('dist').value;
+  if(!(D>0&&Number.isFinite(trim)))return null;
+  const Hp=trim-C.drop;
+  const f=cover(T,asp,o,s,Hp,D);if(!f)return null;
+  const{TR,th,phi,h}=f;
+  const TRb=clamp(TR,p.lens.min,p.lens.max);
+  const best=trap(th,TRb,asp,o,s,Hp,D),wide=trap(th,p.lens.min,asp,o,s,Hp,D),tele=trap(th,p.lens.max,asp,o,s,Hp,D);
+  if(!best||!wide||!tele)return null;
   const vmin=(p.offset+p.shMin)/100*h,vmax=(p.offset+p.shMax)/100*h;
   const ta=phi-s*Math.atan(vmin),tb=phi-s*Math.atan(vmax);
-  const tolLo=Math.min(ta,tb)-th,tolHi=Math.max(ta,tb)-th;
   const yAt=v=>{const q=project(th,s,Hp,D,0,v);return q?q.y:NaN};
-  const reach=[yAt(vmin),yAt(vmax)].sort((a,b)=>a-b);
-  const e1=Math.abs(c[1].x-c[0].x),e2=Math.abs(c[2].x-c[3].x),e1y=(c[0].y+c[1].y)/2,e2y=(c[2].y+c[3].y)/2;
-  const wTop=e1y>e2y?e1:e2,wBot=e1y>e2y?e2:e1;
-  return{p,sw,sh,sb,Hc,Hp,trim,D,s,Wi,Hi,TR,th,phi,tolLo,tolHi,hasShift,shRef,corners:c,reach,wTop,wBot};
+  return{...C,trim,D,Hp,TR,TRb,th,phi,tolLo:Math.min(ta,tb)-th,tolHi:Math.max(ta,tb)-th,
+    reach:[yAt(vmin),yAt(vmax)].sort((a,b)=>a-b),best,wide,tele,exact:f.t,Wi:T.sw};
 }
-
-/* ---------- Rendu calcul ---------- */
-let R=null;
-function update(){
-  const inp={};FIELDS.forEach(f=>inp[f]=$(f).value);inp.model=modelSel.value;inp.lens=lensSel.value;inp.mount=S.mount;inp.ref=S.ref;store.set('vp-inputs',inp);
-  const sh=+$('sh').value,sb=+$('sb').value;
-  $('centerHint').textContent=(sh>0&&Number.isFinite(sb))?`centre à ${fmt(sb+sh/2,2)} m`:'';
-  const p=profile();$('refBox').hidden=!(p.shMax!==p.shMin);
-  R=solve();
+function renderCalc(C){
+  R=C?solve(C):null;
   const msgs=$('rMsgs');msgs.innerHTML='';
   const addMsg=(cls,html)=>{const d=document.createElement('div');d.className='alert '+cls;d.innerHTML='<span>'+html+'</span>';msgs.appendChild(d);};
-  if(!R){$('rTarget').textContent='–';$('rSentence').textContent='';$('rTolHead').textContent='';$('rKv').innerHTML='';$('sideView').innerHTML='';$('frontView').innerHTML='';addMsg('bad','Données incomplètes ou géométrie impossible.');pushTarget();return;}
-  const thD=R.th*DEG;
+  if(!R){$('rTarget').textContent='–';$('rSentence').textContent='';$('rTolHead').textContent='';$('rKv').innerHTML='';$('rCover').innerHTML='';$('rCoverNote').textContent='';$('sideView').innerHTML='';$('frontView').innerHTML='';addMsg('bad','Données incomplètes ou géométrie impossible.');return;}
+  const thD=R.th*DEG,{T,p}=R;
   $('rTarget').textContent=sgn(thD)+'°';
   $('rSentence').textContent=`Incliner de ${fmt(Math.abs(thD))}° ${thD<0?'vers le bas':'vers le haut'}${R.s<0?', montage inversé':''}.`;
   $('rTolHead').textContent=R.hasShift?`réserve ${sgn(R.tolLo*DEG)}° / ${sgn(R.tolHi*DEG)}°`:'pas de réserve shift';
+  if(R.TR<p.lens.min-1e-6)addMsg('bad',`Trop près : pour couvrir l'écran il faudrait un throw de ${fmt(R.TR,2)}:1, l'objectif descend à ${fmt(p.lens.min,2)}:1. Même au zoom grand-angle, l'écran ne sera pas couvert.`);
+  else if(R.TR>p.lens.max+1e-6)addMsg('warn',`Loin : même au zoom télé (${fmt(p.lens.max,2)}:1) l'image déborde plus que nécessaire. L'écran est couvert, mais avec moins de pixels utiles.`);
+  if(R.exact.ks>R.K)addMsg('warn',`Keystone de ${fmt(R.exact.ks)} %, au-delà des ${fmt(R.K,0)} % acceptés. Vois l'onglet Préparer pour une meilleure hauteur.`);
+  if(!R.hasShift)addMsg('warn','Pas de shift, aucune réserve : chaque 0,1° déplace l\'image de ≈ '+fmt(R.D*Math.tan(0.1/DEG)/Math.cos(R.phi)**2*100,1)+' cm.');
   if(R.hasShift){$('refHint').textContent=S.ref==='mid'
       ?`Règle le shift vertical à ${sgn(R.shRef,0)} % (milieu de course) avant de lever : marge identique dans les deux sens.`
       :'Shift vertical au neutre (position home) avant de lever. Marge asymétrique : +50 % d\'un côté, −16 % de l\'autre.';}
-  else $('refHint').textContent=p.note||'';
-  if(R.TR<R.p.lens.min-1e-6)addMsg('bad',`Throw requis ${fmt(R.TR,2)}:1, sous le minimum de l'objectif (${fmt(R.p.lens.min,2)}:1) : l'image ne pourra pas être assez grande. Recule ou change d'objectif.`);
-  else if(R.TR>R.p.lens.max+1e-6)addMsg('bad',`Throw requis ${fmt(R.TR,2)}:1, au-dessus du maximum de l'objectif (${fmt(R.p.lens.max,2)}:1) : l'image sera trop grande. Rapproche ou change d'objectif.`);
-  const ksPct=Math.abs(1-Math.min(R.wTop,R.wBot)/Math.max(R.wTop,R.wBot))*100;
-  if(ksPct>12)addMsg('warn',`Keystone important (${fmt(ksPct)} %). La correction numérique coûtera de la résolution ; envisage de baisser le projecteur.`);
-  if(!R.hasShift)addMsg('warn','Pas de shift, aucune réserve : chaque 0,1° déplace l\'image de ≈ '+fmt(R.D*Math.tan(0.1/DEG)/Math.cos(R.phi)**2*100,1)+' cm.');
-  const kv=[['Image, format natif',`${fmt(R.Wi,2)} × ${fmt(R.Hi,2)} m`],['Hauteur objectif',`${fmt(R.Hp,2)} m`],['Dénivelé vers le centre',`${sgn(R.Hc-R.Hp,2)} m`],
-    ['Throw nécessaire',`${fmt(R.TR,2)}:1`],['Plage objectif',`${fmt(R.p.lens.min,2)}–${fmt(R.p.lens.max,2)}:1`],['Largeur haut / bas',`${fmt(R.wTop,2)} / ${fmt(R.wBot,2)} m`],['Keystone',`${fmt(ksPct)} %`]];
+  const kv=[['Hauteur objectif',`${fmt(R.Hp,2)} m`],['Dénivelé vers le centre',`${sgn(T.Hc-R.Hp,2)} m`],
+    ['Throw pour couvrir',`${fmt(R.TR,2)}:1`],['Plage objectif',`${fmt(p.lens.min,2)}–${fmt(p.lens.max,2)}:1`],['Keystone',`${fmt(R.exact.ks)} %`]];
   if(R.hasShift)kv.push(['Le shift couvre',`${fmt(R.reach[0],2)} → ${fmt(R.reach[1],2)} m`]);
   $('rKv').innerHTML=kv.map(([a,b])=>`<li><span>${a}</span><b>${b}</b></li>`).join('');
-  drawSide();drawFront();pushTarget();
+  // couverture de l'écran par l'image au meilleur zoom
+  const b=R.best,cm=v=>Math.abs(v)<0.01?'≈ 0':(v>0?`déborde ${fmt(v*100,0)} cm`:`manque ${fmt(-v*100,0)} cm`);
+  const cov=[['Haut',b.yTop-T.top],['Bas',T.sb-b.yBot],['Côtés, en haut de l\'écran',(widthAt(b,T.top)-T.sw)/2],['Côtés, en bas de l\'écran',(widthAt(b,T.sb)-T.sw)/2]];
+  $('rCover').innerHTML=cov.map(([a,v])=>`<li class="${v<-0.01?'bad':''}"><span>${a}</span><b>${cm(v)}</b></li>`).join('');
+  let note=R.TRb!==R.TR?`Zoom en butée ${R.TR<p.lens.min?'grand-angle':'télé'}. `:`Zoom à ${fmt(R.TR,2)}:1 : l'image touche juste l'écran sur son bord le plus serré. `;
+  const scr=T.sw/T.sh,ext=(T.Hcov-T.sh)/2,extW=(T.Wc-T.sw)/2;
+  if(ext>0.01)note+=`Écran ${fmt(scr,2)}:1 plus large que le format du projecteur : environ ${fmt(ext*100,0)} cm d'image en trop en haut et en bas, à masquer. `;
+  else if(extW>0.01)note+=`Écran plus haut que le format du projecteur : environ ${fmt(extW*100,0)} cm d'image en trop de chaque côté, à masquer. `;
+  if(b.ks>0.5)note+='Les débords supplémentaires viennent du keystone.';
+  $('rCoverNote').textContent=note;
+  drawSide();drawFront();
 }
-const T=(x,y,txt,anc='start',size=10)=>`<text x="${x}" y="${y}" fill="${css('--muted')}" font-family="DM Mono, monospace" font-size="${size}" text-anchor="${anc}">${txt}</text>`;
-function beamDefs(id){return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${css('--hot')}" stop-opacity=".55"/><stop offset="1" stop-color="${css('--mag')}" stop-opacity=".35"/></linearGradient></defs>`;}
 function drawSide(){
-  const svg=$('sideView'),W=360,H=210,pad=22,ink=css('--ink'),mut=css('--muted');
-  const top=Math.max(R.trim+0.4,R.sb+R.sh+0.4,R.Hp+0.4);
-  const k=Math.min((W-2*pad-20)/(R.D*1.06+0.6),(H-2*pad)/top);
-  const X=x=>pad+14+x*k,Y=y=>H-pad-y*k;
-  const c=R.corners,cy=(c[0].y+c[1].y)/2,by=(c[2].y+c[3].y)/2,fx=Math.cos(R.th),fy=Math.sin(R.th),bw=0.7,bh=0.28;
+  const svg=$('sideView'),W=360,Ht=210,pad=22,ink=css('--ink'),mut=css('--muted'),T=R.T;
+  const top=Math.max(R.trim+0.4,T.top+0.4,R.Hp+0.4,R.best.yTop);
+  const k=Math.min((W-2*pad-20)/(R.D*1.06+0.6),(Ht-2*pad)/top);
+  const X=x=>pad+14+x*k,Y=y=>Ht-pad-y*k;
+  const fx=Math.cos(R.th),fy=Math.sin(R.th),bw=0.7,bh=0.28;
   const box=[[-bw,-bh/2],[0,-bh/2],[0,bh/2],[-bw,bh/2]].map(([u,v])=>`${X(u*fx-v*fy)},${Y(R.Hp+u*fy+v*fx)}`).join(' ');
   let g=beamDefs('bs');
   g+=`<line x1="${pad}" y1="${Y(0)}" x2="${W-pad/2}" y2="${Y(0)}" stroke="${ink}" stroke-width="1"/>`;
-  g+=`<rect x="${X(-0.25)}" y="${Y(R.trim+0.3)}" width="${0.5*k}" height="${0.3*k}" fill="none" stroke="${ink}" stroke-width="1"/>`;
-  g+=`<path d="M${X(-0.25)} ${Y(R.trim+0.3)} L${X(0)} ${Y(R.trim)} L${X(0.25)} ${Y(R.trim+0.3)}" fill="none" stroke="${ink}" stroke-width=".8"/>`;
-  g+=`<line x1="${X(0)}" y1="${Y(R.trim)}" x2="${X(0)}" y2="${Y(R.Hp)}" stroke="${ink}" stroke-width="1"/>`;
-  g+=`<polygon points="${X(0)},${Y(R.Hp)} ${X(R.D)},${Y(Math.max(cy,by))} ${X(R.D)},${Y(Math.min(cy,by))}" fill="url(#bs)"/>`;
+  if(R.s<0){g+=`<rect x="${X(-0.25)}" y="${Y(R.trim+0.3)}" width="${0.5*k}" height="${0.3*k}" fill="none" stroke="${ink}" stroke-width="1"/>`;
+    g+=`<path d="M${X(-0.25)} ${Y(R.trim+0.3)} L${X(0)} ${Y(R.trim)} L${X(0.25)} ${Y(R.trim+0.3)}" fill="none" stroke="${ink}" stroke-width=".8"/>`;
+    g+=`<line x1="${X(0)}" y1="${Y(R.trim)}" x2="${X(0)}" y2="${Y(R.Hp)}" stroke="${ink}" stroke-width="1"/>`;}
+  g+=`<polygon points="${X(0)},${Y(R.Hp)} ${X(R.D)},${Y(R.best.yTop)} ${X(R.D)},${Y(Math.max(0,R.best.yBot))}" fill="url(#bs)"/>`;
   const ax=R.D*1.02;
   g+=`<line x1="${X(0)}" y1="${Y(R.Hp)}" x2="${X(ax)}" y2="${Y(R.Hp+Math.tan(R.th)*ax)}" stroke="${mut}" stroke-dasharray="3 4" stroke-width="1"/>`;
   g+=`<polygon points="${box}" fill="${css('--bg')}" stroke="${ink}" stroke-width="1.3"/>`;
-  g+=`<line x1="${X(R.D)}" y1="${Y(R.sb)}" x2="${X(R.D)}" y2="${Y(R.sb+R.sh)}" stroke="${ink}" stroke-width="4"/>`;
+  g+=`<line x1="${X(R.D)}" y1="${Y(T.sb)}" x2="${X(R.D)}" y2="${Y(T.top)}" stroke="${ink}" stroke-width="4"/>`;
   if(R.hasShift)g+=`<line x1="${X(R.D)+8}" y1="${Y(R.reach[0])}" x2="${X(R.D)+8}" y2="${Y(R.reach[1])}" stroke="${css('--hot')}" stroke-width="4" stroke-linecap="round"/>`;
-  g+=`<circle cx="${X(R.D)}" cy="${Y(R.Hc)}" r="4" fill="${css('--bg')}" stroke="${css('--mag')}" stroke-width="2"/>`;
-  g+=T(X(0)+6,Y(R.trim+0.3)-4,`truss ${fmt(R.trim,2)} m`);
-  g+=T((X(0)+X(R.D))/2,Y(0)+14,`${fmt(R.D,2)} m`,'middle');
-  g+=T(X(R.D)-6,Y(R.sb)+12,`bas ${fmt(R.sb,2)}`,'end');
-  g+=T(X(0)+8,Y(R.Hp)+(R.th<0?-8:14),`${sgn(R.th*DEG)}°`,'start',11);
+  g+=`<circle cx="${X(R.D)}" cy="${Y(T.Hc)}" r="4" fill="${css('--bg')}" stroke="${css('--mag')}" stroke-width="2"/>`;
+  if(R.s<0)g+=T_(X(0)+6,Y(R.trim+0.3)-4,`truss ${fmt(R.trim,2)} m`);
+  g+=T_((X(0)+X(R.D))/2,Y(0)+14,`${fmt(R.D,2)} m`,'middle');
+  g+=T_(X(R.D)-6,Y(T.sb)+12,`bas ${fmt(T.sb,2)}`,'end');
+  g+=T_(X(0)+8,Y(R.Hp)+(R.th<0?-8:14),`${sgn(R.th*DEG)}°`,'start',11);
   svg.innerHTML=g;
 }
 function drawFront(){
-  const svg=$('frontView'),W=360,H=230,pad=18;
-  const xs=[...R.corners.map(c=>c.x),-R.sw/2,R.sw/2],ys=[...R.corners.map(c=>c.y),R.sb,R.sb+R.sh];
+  const svg=$('frontView'),W=360,Ht=250,pad=16,T=R.T,ink=css('--ink');
+  const xs=[-T.sw/2,T.sw/2],ys=[T.sb,T.top];
+  [R.wide,R.tele,R.best].forEach(t=>t.c.forEach(p=>{xs.push(p.x);ys.push(p.y);}));
   const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
-  const k=Math.min((W-2*pad)/(x1-x0),(H-2*pad-16)/(y1-y0));
-  const ox=(W-(x1-x0)*k)/2,oy=pad+((H-2*pad-16)-(y1-y0)*k)/2;
+  const k=Math.min((W-2*pad)/(x1-x0),(Ht-2*pad-18)/(y1-y0));
+  const ox=(W-(x1-x0)*k)/2,oy=pad+((Ht-2*pad-18)-(y1-y0)*k)/2;
   const X=x=>ox+(x-x0)*k,Y=y=>oy+(y1-y)*k;
+  const poly=t=>t.c.map(p=>`${X(p.x)},${Y(p.y)}`).join(' ');
   let g=beamDefs('bf');
-  g+=`<rect x="${X(-R.sw/2)}" y="${Y(R.sb+R.sh)}" width="${R.sw*k}" height="${R.sh*k}" fill="${css('--screen')}" fill-opacity=".55" stroke="${css('--ink')}" stroke-width="1.2"/>`;
-  g+=`<polygon points="${R.corners.map(c=>`${X(c.x)},${Y(c.y)}`).join(' ')}" fill="url(#bf)" stroke="${css('--mag')}" stroke-width="1.5"/>`;
-  g+=`<circle cx="${X(0)}" cy="${Y(R.Hc)}" r="3.5" fill="${css('--ink')}"/>`;
-  const ks=Math.abs(1-Math.min(R.wTop,R.wBot)/Math.max(R.wTop,R.wBot))*100;
-  g+=T(W/2,H-6,`haut ${fmt(R.wTop,2)} m · bas ${fmt(R.wBot,2)} m · keystone ${fmt(ks)} %`,'middle',11);
+  g+=`<rect x="${X(-T.sw/2)}" y="${Y(T.top)}" width="${T.sw*k}" height="${T.sh*k}" fill="${css('--screen')}" fill-opacity=".55"/>`;
+  g+=`<polygon points="${poly(R.best)}" fill="url(#bf)" stroke="${css('--mag')}" stroke-width="1.5"/>`;
+  [R.wide,R.tele].forEach(t=>{g+=`<polygon points="${poly(t)}" fill="none" stroke="${ink}" stroke-width="1" stroke-dasharray="4 4"/>`;});
+  g+=`<rect x="${X(-T.sw/2)}" y="${Y(T.top)}" width="${T.sw*k}" height="${T.sh*k}" fill="none" stroke="${ink}" stroke-width="2"/>`;
+  g+=`<circle cx="${X(0)}" cy="${Y(T.Hc)}" r="3" fill="${ink}"/>`;
+  g+=T_(W/2,Ht-6,`image haut ${fmt(R.best.wTop,2)} m · bas ${fmt(R.best.wBot,2)} m · keystone ${fmt(R.best.ks)} %`,'middle',11);
   svg.innerHTML=g;
 }
 
+/* ---------- Mise à jour globale ---------- */
+function update(fromDrag){
+  const inp={};FIELDS.forEach(f=>inp[f]=$(f).value);inp.model=modelSel.value;inp.lens=lensSel.value;['mount','ref','tab'].forEach(k=>inp[k]=S[k]);store.set('vp-inputs-v6',inp);
+  const p=profile();
+  $('refBox').hidden=!(p.shMax!==p.shMin);
+  $('boxDrop').hidden=S.mount!=='inv';
+  $('lblTrim').innerHTML=(S.mount==='inv'?'Truss, bas':'Hauteur objectif')+' <em>m</em>';
+  if(p.shMax===p.shMin)$('refHint').textContent=p.note||'';
+  const C=common();
+  if(C){$('centerHint').textContent=`centre à ${fmt(C.T.Hc,2)} m`;
+    $('coverHint').textContent=`L'image doit couvrir tout l'écran : ${fmt(C.T.Wc,2)} × ${fmt(C.T.Hcov,2)} m au format ${C.asp>1.7?'16:9':C.asp>1.55?'16:10':'4:3'}, le surplus se masque ensuite.`;}
+  else{$('centerHint').textContent='';$('coverHint').textContent='';}
+  if(C&&S.tab==='prep')renderPrep(C,!!fromDrag&&dragging);
+  renderCalc(C);
+  pushTarget();
+}
+
 /* ---------- Onglets ---------- */
-function tab(which){const calc=which==='calc';
-  $('tab-calc').setAttribute('aria-selected',calc);$('tab-mes').setAttribute('aria-selected',!calc);
-  $('pane-calc').hidden=!calc;$('pane-mes').hidden=calc;
-  if(calc&&R){drawSide();drawFront();}}
-$('tab-calc').addEventListener('click',()=>tab('calc'));
-$('tab-mes').addEventListener('click',()=>tab('mes'));
+function tab(which){
+  S.tab=which;
+  ['prep','calc','mes'].forEach(t=>{$('tab-'+t).setAttribute('aria-selected',t===which);$('pane-'+t).hidden=t!==which;});
+  $('shared').hidden=which==='mes';
+  update();
+}
+['prep','calc','mes'].forEach(t=>$('tab-'+t).addEventListener('click',()=>tab(t)));
 
 /* ---------- Mesure ---------- */
 const M={got:false,pitch:null,roll:null,flip:store.get('vp-flip')||false,bias:store.get('vp-bias')||{p:0,r:0},calA:null,truss:null};
@@ -472,10 +708,10 @@ function refreshMeter(){
   const c=current(),read=$('mRead'),ord=$('mOrder');
   if(!c){read.innerHTML='–<small>°</small>';return;}
   read.innerHTML=`${sgn(c.p,2)}<small>°</small>`;
-  const rc=Math.abs(c.r)<=0.2?'st-ok':Math.abs(c.r)<=0.6?'st-warn':'st-bad';
+  const rc=Math.abs(c.r)<=TOL?'st-ok':Math.abs(c.r)<=2*TOL?'st-warn':'st-bad';
   $('mRoll').textContent=sgn(c.r,2)+'°';$('mRoll').className=rc;
   const ro=$('mRollOrder');ro.className='order '+rc;
-  ro.textContent=Math.abs(c.r)<=0.2?'De niveau':(c.r>0?'Remonter le côté droit ':'Remonter le côté gauche ')+fmt(Math.abs(c.r),1)+'°';
+  ro.textContent=Math.abs(c.r)<=TOL?'De niveau':(c.r>0?'Remonter le côté droit ':'Remonter le côté gauche ')+fmt(Math.abs(c.r),1)+'°';
   const Wimg=R?R.Wi:(+$('sw').value||0);
   if(Wimg>0){const dcm=Wimg*Math.tan(Math.abs(c.r)/DEG)*100;
     $('mRollCm').textContent=Math.abs(c.r)<0.05?'Image droite.':`Un bord de l'image sera ≈ ${fmt(dcm,0)} cm plus bas que l'autre (${c.r>0?'côté droit':'côté gauche'}, vu depuis le projecteur).`;}
@@ -484,23 +720,24 @@ function refreshMeter(){
   const t=R.th*DEG,d=c.p-t,tlo=R.tolLo*DEG,thi=R.tolHi*DEG;
   $('mDelta').textContent=sgn(d,2)+'°';
   let cls,txt;
-  if(Math.abs(d)<=0.3){cls='st-ok';txt='Dans la cible';}
+  if(Math.abs(d)<=TOL){cls='st-ok';txt='Dans la cible';}
   else{const inTol=R.hasShift&&d>=tlo&&d<=thi;cls=inTol?'st-warn':'st-bad';
     txt=(d>0?'Viser plus bas ':'Viser plus haut ')+fmt(Math.abs(d),1)+'°'+(inTol?' · rattrapable au shift':'');}
   read.className='reading '+cls;ord.className='order '+cls;ord.textContent=txt;$('mDelta').className=cls;
   const cm=R.D*(Math.tan(R.th+d/DEG)-Math.tan(R.th))*100;
   $('mCm').textContent=`${sgn(cm,0)} cm`;$('mCm').className=cls;
-  drawNeedle(d);moveDot(d,c.r,Math.abs(d)<=0.3&&Math.abs(c.r)<=0.2?'st-ok':cls==='st-ok'?rc:cls);
+  drawNeedle(d);moveDot(d,c.r,Math.abs(d)<=TOL&&Math.abs(c.r)<=TOL?'st-ok':cls==='st-ok'?rc:cls);
 }
-
-/* viseur circulaire : x = roll, y = écart de tilt, échelle compressée */
-const SC=v=>Math.sign(v)*118*(1-Math.exp(-Math.abs(v)/2.2));
+const TOL=0.5; // tolérance « correct », en degrés (tilt et roll)
+// viseur : bord du cercle = 20°, échelle resserrée au centre pour garder de la finesse près de la cible
+const SC=v=>{const a=6,m=Math.min(Math.abs(v),20);return Math.sign(v)*140*(1-Math.exp(-m/a))/(1-Math.exp(-20/a));};
 function drawScope(){
   const ink=css('--ink'),mut=css('--muted');let g=beamDefs('bsc');
   g+=`<circle cx="150" cy="150" r="140" fill="none" stroke="${ink}" stroke-width="1.5"/>`;
-  [1,3,8].forEach(v=>{g+=`<circle cx="150" cy="150" r="${SC(v)}" fill="none" stroke="${mut}" stroke-width=".8" stroke-dasharray="2 4"/>`;
+  g+=`<text x="${150+140*0.7071+4}" y="${150-140*0.7071-4}" fill="${mut}" font-family="DM Mono, monospace" font-size="10">20°</text>`;
+  [1,5,10].forEach(v=>{g+=`<circle cx="150" cy="150" r="${SC(v)}" fill="none" stroke="${mut}" stroke-width=".8" stroke-dasharray="2 4"/>`;
     g+=`<text x="${150+SC(v)*0.7071+4}" y="${150-SC(v)*0.7071-4}" fill="${mut}" font-family="DM Mono, monospace" font-size="10">${fmt(v,0)}°</text>`;});
-  g+=`<circle cx="150" cy="150" r="${SC(0.3)}" fill="${css('--ok')}" fill-opacity=".22" stroke="${css('--ok')}" stroke-width="1.2"/>`;
+  g+=`<circle cx="150" cy="150" r="${SC(TOL)}" fill="${css('--ok')}" fill-opacity=".22" stroke="${css('--ok')}" stroke-width="1.2"/>`;
   g+=`<line x1="10" y1="150" x2="290" y2="150" stroke="${ink}" stroke-width=".8"/><line x1="150" y1="10" x2="150" y2="290" stroke="${ink}" stroke-width=".8"/>`;
   g+=`<text x="150" y="28" text-anchor="middle" fill="${mut}" font-family="Jost, sans-serif" font-size="11" letter-spacing="1">VISE TROP HAUT</text>`;
   g+=`<text x="150" y="282" text-anchor="middle" fill="${mut}" font-family="Jost, sans-serif" font-size="11" letter-spacing="1">VISE TROP BAS</text>`;
@@ -512,13 +749,12 @@ function moveDot(d,r,cls){const n=document.getElementById('dot');if(!n)return;
   n.setAttribute('transform',`translate(${150+SC(r)},${150-SC(d)})`);
   const col=cls==='st-ok'?css('--ok'):cls==='st-warn'?css('--warn'):cls==='st-bad'?css('--bad'):css('--ink');
   n.firstChild.setAttribute('stroke',col);n.firstChild.setAttribute('stroke-width',cls==='st-ok'?'3':'1.5');}
-
 function gaugeRange(){if(!R)return 5;return Math.min(Math.max(3,Math.abs(R.tolLo*DEG),Math.abs(R.tolHi*DEG))*1.15,20);}
 function drawGauge(){
   const svg=$('gauge'),W=340,L=14,Rr=W-14,mid=W/2,rng=gaugeRange(),X=d=>mid+(d/rng)*(Rr-mid),ink=css('--ink'),mut=css('--muted');
   let g=`<line x1="${L}" y1="30" x2="${Rr}" y2="30" stroke="${ink}" stroke-width="1"/>`;
   if(R&&R.hasShift){const a=Math.max(-rng,R.tolLo*DEG),b=Math.min(rng,R.tolHi*DEG);g+=`<rect x="${X(a)}" y="25" width="${X(b)-X(a)}" height="10" rx="5" fill="${css('--hot')}" fill-opacity=".35"/>`;}
-  g+=`<rect x="${X(-0.3)}" y="22" width="${Math.max(4,X(0.3)-X(-0.3))}" height="16" rx="3" fill="${css('--ok')}"/>`;
+  g+=`<rect x="${X(-TOL)}" y="22" width="${Math.max(4,X(TOL)-X(-TOL))}" height="16" rx="3" fill="${css('--ok')}"/>`;
   [-1,-.5,0,.5,1].forEach(f=>{const x=X(f*rng);g+=`<line x1="${x}" y1="38" x2="${x}" y2="44" stroke="${ink}"/><text x="${x}" y="56" fill="${mut}" font-family="DM Mono, monospace" font-size="10" text-anchor="middle">${f===0?'cible':sgn(f*rng,1)}</text>`;});
   g+=`<g id="needle"><polygon points="0,16 -6,5 6,5" fill="${ink}"/><line x1="0" y1="16" x2="0" y2="40" stroke="${ink}" stroke-width="2"/></g>`;
   g+=`<text x="${L}" y="72" fill="${mut}" font-family="Jost, sans-serif" font-size="11">vise trop bas</text><text x="${Rr}" y="72" fill="${mut}" font-family="Jost, sans-serif" font-size="11" text-anchor="end">vise trop haut</text>`;
@@ -529,8 +765,8 @@ const RRNG=3;
 function drawRollGauge(){
   const svg=$('rgauge'),W=340,L=14,Rr=W-14,mid=W/2,X=d=>mid+(d/RRNG)*(Rr-mid),ink=css('--ink'),mut=css('--muted');
   let g=`<line x1="${L}" y1="24" x2="${Rr}" y2="24" stroke="${ink}" stroke-width="1"/>`;
-  g+=`<rect x="${X(-0.6)}" y="19" width="${X(0.6)-X(-0.6)}" height="10" rx="5" fill="${css('--hot')}" fill-opacity=".35"/>`;
-  g+=`<rect x="${X(-0.2)}" y="16" width="${X(0.2)-X(-0.2)}" height="16" rx="3" fill="${css('--ok')}"/>`;
+  g+=`<rect x="${X(-2*TOL)}" y="19" width="${X(2*TOL)-X(-2*TOL)}" height="10" rx="5" fill="${css('--hot')}" fill-opacity=".35"/>`;
+  g+=`<rect x="${X(-TOL)}" y="16" width="${X(TOL)-X(-TOL)}" height="16" rx="3" fill="${css('--ok')}"/>`;
   [-3,-1.5,0,1.5,3].forEach(v=>{const x=X(v);g+=`<line x1="${x}" y1="32" x2="${x}" y2="38" stroke="${ink}"/><text x="${x}" y="50" fill="${mut}" font-family="DM Mono, monospace" font-size="10" text-anchor="middle">${v===0?'0°':sgn(v,1)}</text>`;});
   g+=`<g id="rneedle"><polygon points="0,12 -6,1 6,1" fill="${ink}"/><line x1="0" y1="12" x2="0" y2="34" stroke="${ink}" stroke-width="2"/></g>`;
   g+=`<text x="${L}" y="61" fill="${mut}" font-family="Jost, sans-serif" font-size="11">gauche plus bas</text><text x="${Rr}" y="61" fill="${mut}" font-family="Jost, sans-serif" font-size="11" text-anchor="end">droite plus bas</text>`;
@@ -562,13 +798,14 @@ $('bCalB').addEventListener('click',()=>{if(!M.calA||M.pitch==null)return;
 $('bTruss').addEventListener('click',()=>{if(M.pitch==null)return;M.truss=M.pitch-M.bias.p;$('mRef').textContent=`truss ${sgn(M.truss,2)}°`;$('bTrussClr').disabled=false;});
 $('bTrussClr').addEventListener('click',()=>{M.truss=null;$('mRef').textContent='gravité';$('bTrussClr').disabled=true;});
 
-function redrawAll(){paintMotif();if(R){drawSide();drawFront();}drawGauge();drawRollGauge();drawScope();refreshMeter();}
+function redrawAll(){paintMotif();ZV=null;update();}
 try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawAll);}catch(e){}
 new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(paintMotif,150);});
-if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(R){drawSide();drawFront();}});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>update());
 
-update();paintMotif();
+tab(S.tab==='calc'||S.tab==='mes'?S.tab:'prep');
+paintMotif();
 })();
 </script>
 
