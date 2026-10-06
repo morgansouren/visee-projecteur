@@ -135,6 +135,32 @@ ol.steps li::before{content:counter(s);width:24px;height:24px;border-radius:50%;
 #zoneView{touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
 .drag-hint{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 nav.tabs{gap:22px}
+.calfig{margin:12px 0 0}
+.calfig svg{display:block;width:100%;max-width:480px;height:auto;margin:0 auto}
+.cal-surface{fill:var(--bg2);stroke:var(--rule);stroke-width:1}
+.cal-body{fill:var(--ink)} .cal-screen{fill:var(--bg);opacity:.9} .cal-cam{fill:var(--bg)}
+.cal-up{fill:var(--hot)}
+.cal-arrow{fill:none;stroke:var(--mag);stroke-width:2;stroke-dasharray:4 4}
+.cal-head{fill:var(--mag)}
+.cal-label{font-family:var(--f-num);font-size:22px;font-weight:500;fill:var(--ink)}
+.cal-small{font-family:var(--f-ui);font-size:10.5px;letter-spacing:.04em;fill:var(--muted)}
+.calc-top .fields{column-gap:16px}
+.calc-top label.f{padding-top:8px}
+.hero-calc{padding:14px 0 12px;border-top:1px solid var(--rule);margin-top:14px}
+.hero-calc .big{font-size:clamp(60px,18vw,96px)}
+.tolhead{text-transform:none;letter-spacing:.02em;margin-left:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding-top:4px}
+.chip{font-family:var(--f-num);font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid currentColor}
+.chip.ok{color:var(--ok)} .chip.warn{color:var(--warn)} .chip.bad{color:var(--bad)}
+.cal-phone{transform-box:view-box;transform-origin:160px 83px;transform:rotate(0deg);transition:transform 1.4s cubic-bezier(.45,0,.25,1)}
+.calfig.st-b .cal-phone{transform:rotate(180deg)}
+.cal-a,.cal-b,.cal-arrow,.cal-head{transition:opacity .6s}
+.calfig.st-a .cal-b,.calfig.st-b .cal-a{opacity:.22}
+.cal-arrow,.cal-head{opacity:0}
+.calfig.st-b .cal-arrow,.calfig.st-b .cal-head{opacity:1}
+.cal-step{font-weight:600;fill:var(--ink);letter-spacing:.08em;text-transform:uppercase}
+.calfig.st-done .cal-step{fill:var(--ok)}
+@media (prefers-reduced-motion: reduce){.cal-phone{transition:none}}
 .brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .themebtn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:999px;padding:6px 12px 6px 9px;cursor:pointer;flex:0 0 auto}
 .themebtn svg{width:16px;height:16px}
@@ -156,8 +182,8 @@ nav.tabs{gap:22px}
 
   <nav class="tabs" role="tablist">
     <button id="tab-prep" role="tab" aria-selected="true" aria-controls="pane-prep">Préparer</button>
-    <button id="tab-calc" role="tab" aria-selected="false" aria-controls="pane-calc">Calcul</button>
-    <button id="tab-mes" role="tab" aria-selected="false" aria-controls="pane-mes">Mesure</button>
+    <button id="tab-calc" role="tab" aria-selected="false" aria-controls="pane-calc">Calculer</button>
+    <button id="tab-mes" role="tab" aria-selected="false" aria-controls="pane-mes">Mesurer</button>
   </nav>
 
   <!-- ============ COMMUN : écran + projecteur ============ -->
@@ -168,6 +194,10 @@ nav.tabs{gap:22px}
         <label class="f"><span>Largeur <em>m</em></span><input id="sw" type="number" step="0.01" inputmode="decimal" value="6.00"></label>
         <label class="f"><span>Hauteur <em>m</em></span><input id="sh" type="number" step="0.01" inputmode="decimal" value="3.00"></label>
         <label class="f"><span>Bas écran / sol <em>m</em></span><input id="sb" type="number" step="0.01" inputmode="decimal" value="1.20"></label>
+        <label class="f"><span>Format du contenu</span><select id="fmt">
+          <option value="native">Natif du projecteur</option><option value="1.7778">16:9</option><option value="1.6">16:10</option>
+          <option value="1.3333">4:3</option><option value="2">2:1</option><option value="2.39">2,39:1 (scope)</option><option value="1">1:1</option>
+        </select></label>
       </div>
       <p class="note" id="coverHint"></p>
     </section>
@@ -202,11 +232,14 @@ nav.tabs{gap:22px}
           </div></div>
       </div>
       <div class="fields">
-        <label class="f" id="boxDrop"><span>Objectif sous le truss <em>m</em></span><input id="drop" type="number" step="0.01" inputmode="decimal" value="0.35"></label>
         <label class="f"><span>Keystone confort <em>%</em></span><input id="ksComf" type="number" step="1" inputmode="decimal" value="5"></label>
         <label class="f"><span>Keystone max <em>%</em></span><input id="ksMax" type="number" step="1" inputmode="decimal" value="10"></label>
       </div>
       <p class="note" id="refHint"></p>
+      <div class="fields">
+        <label class="f" id="boxLensUp"><span>Axe objectif au-dessus du dessous <em>m · constante du projecteur</em></span><input id="lensUp" type="number" step="0.01" inputmode="decimal" value="0.10"></label>
+      </div>
+      <p class="note">Mesurée une fois par projecteur (≈ 10 cm). Elle sert quand tu mesures la hauteur au dessous du projecteur ou au truss.</p>
     </section>
   </div>
 
@@ -246,22 +279,29 @@ nav.tabs{gap:22px}
 
   <!-- ============ CALCUL ============ -->
   <div id="pane-calc" role="tabpanel" class="wrap" style="gap:28px" hidden>
-    <section class="block">
-      <div class="bhead"><h2>Position</h2><span>synchronisée avec Préparer</span></div>
+    <section class="block calc-top">
       <div class="fields">
-        <label class="f"><span id="lblTrim">Truss, bas <em>m</em></span><input id="trim" type="number" step="0.01" inputmode="decimal" value="7.50"></label>
-        <label class="f"><span>Objectif → écran <em>m</em></span><input id="dist" type="number" step="0.01" inputmode="decimal" value="12.00"></label>
+        <label class="f"><span>Distance objectif → écran <em>m</em></span><input id="dist" type="number" step="0.01" inputmode="decimal" value="12.00"></label>
       </div>
-      <p class="note">Distance horizontale mesurée au sol, à l'aplomb de l'objectif. Projecteur dans l'axe de l'écran, pan réglé à l'œil.</p>
+      <div class="pills" id="hrefSeg" style="padding-top:14px">
+        <button type="button" data-v="lens" aria-pressed="false">Axe objectif</button>
+        <button type="button" data-v="under" aria-pressed="true">Dessous projecteur</button>
+        <button type="button" data-v="truss" aria-pressed="false">Bas du truss</button>
+      </div>
+      <div class="fields">
+        <label class="f"><span id="lblTrim">Hauteur <em>m</em></span><input id="trim" type="number" step="0.01" inputmode="decimal" value="7.05"></label>
+        <label class="f" id="boxHang"><span>Hauteur du support <em>m</em></span><input id="hang" type="number" step="0.01" inputmode="decimal" value="0.45"></label>
+      </div>
+      <div class="hero hero-calc" aria-live="polite">
+        <span class="k">Tilt à régler <span id="rTolHead" class="tolhead"></span></span>
+        <span class="big" id="rTarget">–</span>
+        <span class="sentence" id="rSentence"></span>
+        <span class="chips" id="rChips"></span>
+      </div>
     </section>
 
     <section class="block" aria-live="polite">
-      <div class="bhead"><h2>Résultat</h2><span id="rTolHead"></span></div>
-      <div class="hero">
-        <span class="k">Tilt à régler</span>
-        <span class="big" id="rTarget">–</span>
-        <span class="sentence" id="rSentence"></span>
-      </div>
+      <div class="bhead"><h2>Détails</h2><span>la position est la même que dans Préparer</span></div>
       <div class="alerts" id="rMsgs"></div>
       <ul class="rows" id="rKv"></ul>
       <div class="views">
@@ -273,7 +313,8 @@ nav.tabs{gap:22px}
           <svg id="frontView" viewBox="0 0 360 250" role="img" aria-label="Vue de face : écran, limites du zoom et image projetée"></svg>
           <div class="legend">
             <span><i style="border-color:var(--ink)"></i>écran</span>
-            <span><i class="fill"></i>image au meilleur zoom</span>
+            <span><i class="fill"></i>contenu au meilleur zoom</span>
+            <span id="lgPanel"><i style="border-color:var(--mag);border-top-style:dotted"></i>dalle entière (bandes noires)</span>
             <span><i style="border-color:var(--ink);border-top-style:dashed"></i>limites du zoom</span>
           </div>
         </figure>
@@ -286,10 +327,12 @@ nav.tabs{gap:22px}
   <!-- ============ MESURE ============ -->
   <div id="pane-mes" role="tabpanel" class="wrap" style="gap:26px" hidden>
     <section class="block">
-      <div class="bhead"><h2>Viseur</h2><span>Cible <b id="mTarget" style="font-family:var(--f-num);font-weight:500">–</b> · <span id="mRef">gravité</span></span></div>
+      <div class="bhead"><h2>Viseur</h2><span>Cible <b id="mTarget" style="font-family:var(--f-num);font-weight:500">–</b></span></div>
       <div class="scope"><svg id="scope" viewBox="0 0 300 300" aria-hidden="true"></svg></div>
       <div class="reading st-idle" id="mRead">–<small>°</small></div>
       <div class="order st-idle" id="mOrder">Capteurs arrêtés</div>
+      <div class="btns" id="startBox"><button class="btn primary" id="bStart" type="button">Démarrer les capteurs</button></div>
+      <p class="status" id="mSensor"></p>
       <div class="gauge"><svg id="gauge" viewBox="0 0 340 74" aria-hidden="true"></svg></div>
       <ul class="rows">
         <li><span>Écart à la cible</span><b id="mDelta">–</b></li>
@@ -299,8 +342,6 @@ nav.tabs{gap:22px}
       <div class="gauge" style="padding-top:8px"><svg id="rgauge" viewBox="0 0 340 68" aria-hidden="true"></svg></div>
       <div class="order st-idle" id="mRollOrder" style="font-size:19px">–</div>
       <p class="note" id="mRollCm" style="text-align:center"></p>
-      <div class="btns"><button class="btn primary" id="bStart" type="button">Démarrer les capteurs</button></div>
-      <p class="status" id="mSensor"></p>
     </section>
 
     <section class="block">
@@ -308,28 +349,45 @@ nav.tabs{gap:22px}
       <ol class="steps">
         <li><span>À plat sur le capot du projecteur, <b>haut du GSM vers l'objectif</b>, aligné sur l'axe optique.</span></li>
         <li><span>Lève le haut du GSM : la valeur doit augmenter. Baisse le côté droit : le roll part vers « droite plus bas ». Sinon, inverse le sens.</span></li>
-        <li><span>Tilt au vert, puis roll au vert (±0,5°). Une fois en l'air, repose le GSM pour vérifier le roll : des palans à des hauteurs différentes font rouler le truss.</span></li>
+        <li><span>Règle le tilt jusqu'au vert, puis le roll jusqu'au vert (tolérance ±0,5°).</span></li>
       </ol>
+      <p class="note">Le roll réglé au sol ne tient que si le truss reste <b>de niveau sur sa longueur</b> une fois monté. Mets les deux moteurs exactement à la même hauteur (laser ou mètre) : 5 cm d'écart sur 4 m de truss font déjà 0,7° de roll, et ça se corrige aux moteurs, pas sur le projecteur.</p>
       <div class="btns"><button class="btn" id="bFlip" type="button">Inverser le sens</button></div>
     </section>
 
     <section class="block">
-      <div class="bhead"><h2>Calibration</h2><span>retournement 180°</span></div>
-      <p class="note">Annule le biais du capteur, même sur une surface pas tout à fait plane. À faire une fois, c'est mémorisé.</p>
+      <div class="bhead"><h2>Calibration</h2><span>demi-tour à plat</span></div>
+      <figure class="calfig st-a" id="calFig">
+        <svg viewBox="-64 0 448 170" role="img" aria-label="Vue de dessus : le GSM reste écran vers le haut et pivote d'un demi-tour sur place">
+          <rect x="70" y="10" width="180" height="150" rx="10" class="cal-surface"/>
+          <text x="160" y="154" text-anchor="middle" class="cal-small">surface plane · vue de dessus</text>
+          <path d="M 228 50 A 80 80 0 0 1 228 120" class="cal-arrow" marker-end="url(#calHead)"/>
+          <defs><marker id="calHead" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="cal-head"/></marker></defs>
+          <g class="cal-phone">
+            <rect x="136" y="38" width="48" height="90" rx="9" class="cal-body"/>
+            <rect x="141" y="47" width="38" height="72" rx="3" class="cal-screen"/>
+            <circle cx="160" cy="43" r="2" class="cal-cam"/>
+            <path d="M160 58 L152 70 L157 70 L157 86 L163 86 L163 70 L168 70 Z" class="cal-up"/>
+          </g>
+          <text x="2" y="68" text-anchor="middle" class="cal-label cal-a">A</text>
+          <text x="2" y="86" text-anchor="middle" class="cal-small cal-a">haut vers l'avant</text>
+          <text x="318" y="68" text-anchor="middle" class="cal-label cal-b">B</text>
+          <text x="318" y="86" text-anchor="middle" class="cal-small cal-b">haut vers l'arrière</text>
+          <text x="160" y="28" text-anchor="middle" class="cal-small cal-step" id="calStep">Étape 1 · position A</text>
+        </svg>
+      </figure>
+      <ol class="steps">
+        <li><span>Pose le GSM à plat, <b>écran vers le haut</b>, sur une surface stable. Attends 2 s, touche <b>Mesure A</b>.</span></li>
+        <li><span>Fais-le <b>pivoter d'un demi-tour sur place</b>, toujours écran vers le haut : le haut du GSM pointe maintenant dans l'autre sens. Ne le retourne pas.</span></li>
+        <li><span>Attends 2 s, touche <b>Mesure B</b>. L'app fait la moyenne des deux : le défaut du capteur s'annule, même si la surface penche un peu.</span></li>
+      </ol>
       <div class="btns">
         <button class="btn" id="bCalA" type="button" disabled>1 · Mesure A</button>
-        <button class="btn" id="bCalB" type="button" disabled>2 · Tourner, mesure B</button>
+        <button class="btn" id="bCalB" type="button" disabled>2 · Demi-tour, mesure B</button>
       </div>
       <p class="note" id="calInfo"></p>
     </section>
-
-    <section class="block">
-      <div class="bhead"><h2>Référence truss</h2></div>
-      <p class="note">Si le truss posé au sol n'a pas la même assiette qu'en l'air (sol en pente, truss qui roule sur ses chaises) : GSM sur le truss, orienté vers l'écran, et prends-le comme zéro. Le projecteur est alors mesuré par rapport au truss.</p>
-      <div class="btns">
-        <button class="btn" id="bTruss" type="button" disabled>Zéro sur le truss</button>
-        <button class="btn" id="bTrussClr" type="button" disabled>Revenir à la gravité</button>
-      </div>
+  </div>
     </section>
   </div></div>
 
@@ -398,7 +456,7 @@ const PROFILES={
     lenses:[{name:'Zoom intégré 1,22–1,46:1',min:1.22,max:1.46}]},
   custom:{name:'Autre modèle (manuel)',custom:true,lenses:[{name:'Valeurs saisies',min:1.5,max:2}]}
 };
-const S={mount:'inv',ref:'zero',tab:'prep'};
+const S={mount:'inv',ref:'zero',href:'under',tab:'prep'};
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
 /* ---------- UI ---------- */
@@ -409,16 +467,16 @@ function fillLenses(){const p=PROFILES[modelSel.value];lensSel.innerHTML='';
   $('custBox').hidden=!p.custom;}
 function syncSeg(id,key){$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S[key]?'true':'false'));}
 function segInit(id,key){$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S[key]=b.dataset.v;syncSeg(id,key);update();});}
-segInit('mountSeg','mount');segInit('refSeg','ref');
-const FIELDS=['sw','sh','sb','trim','drop','dist','ksComf','ksMax','cAsp','cTrMin','cTrMax','cShMin','cShMax','cOff'];
+segInit('mountSeg','mount');segInit('refSeg','ref');segInit('hrefSeg','href');
+const FIELDS=['sw','sh','sb','fmt','trim','lensUp','hang','dist','ksComf','ksMax','cAsp','cTrMin','cTrMax','cShMin','cShMax','cOff'];
 const saved=store.get('vp-inputs-v6');
 if(saved){FIELDS.forEach(f=>{if(saved[f]!=null&&$(f))$(f).value=saved[f];});if(saved.model&&PROFILES[saved.model])modelSel.value=saved.model;
-  ['mount','ref','tab'].forEach(k=>{if(saved[k])S[k]=saved[k];});}
+  ['mount','ref','href','tab'].forEach(k=>{if(saved[k])S[k]=saved[k];});}
 fillLenses();if(saved&&saved.lens!=null&&lensSel.options[saved.lens])lensSel.value=saved.lens;
-syncSeg('mountSeg','mount');syncSeg('refSeg','ref');
+syncSeg('mountSeg','mount');syncSeg('refSeg','ref');syncSeg('hrefSeg','href');
 modelSel.addEventListener('change',()=>{fillLenses();update();});
 lensSel.addEventListener('change',update);
-FIELDS.forEach(f=>$(f).addEventListener('input',update));
+FIELDS.forEach(f=>{$(f).addEventListener('input',update);$(f).addEventListener('change',update);});
 function profile(){const k=modelSel.value,p=PROFILES[k];
   if(p.custom)return{name:p.name,aspect:+$('cAsp').value,offset:+$('cOff').value||0,shMin:+$('cShMin').value||0,shMax:+$('cShMax').value||0,lens:{min:+$('cTrMin').value,max:+$('cTrMax').value},note:''};
   return{...p,lens:p.lenses[+lensSel.value]||p.lenses[0]};}
@@ -435,12 +493,15 @@ function project(th,s,Hp,D,xi,yi){const dy=Math.sin(th)+yi*s*Math.cos(th),dz=Mat
 function target(p){
   const sw=+$('sw').value,sh=+$('sh').value,sb=+$('sb').value,asp=p.aspect;
   if(!(sw>0&&sh>0&&asp>0&&Number.isFinite(sb)))return null;
-  const Wc=Math.max(sw,sh*asp),Hcov=Wc/asp; // image qui couvre l'écran, sans tilt
-  return{sw,sh,sb,Wc,Hcov,Hc:sb+sh/2,top:sb+sh};
+  const fv=$('fmt').value,ca=fv==='native'?asp:+fv;          // format du contenu
+  const Wcont=Math.max(sw,sh*ca),Hcont=Wcont/ca;             // contenu qui couvre l'écran
+  // la dalle du projecteur contient le contenu : bandes noires en haut/bas (contenu plus large) ou sur les côtés
+  const Wc=ca>=asp?Wcont:Hcont*asp,Hcov=Wc/asp;
+  return{sw,sh,sb,Wc,Hcov,Wcont,Hcont,ca,fx:Wcont/Wc,fy:Hcont/Hcov,Hc:sb+sh/2,top:sb+sh};
 }
-function trap(th,TR,asp,o,s,Hp,D){
-  const w=1/TR,h=w/asp,vc=o*h;
-  const c=[[-w/2,vc+h/2],[w/2,vc+h/2],[w/2,vc-h/2],[-w/2,vc-h/2]].map(([x,y])=>project(th,s,Hp,D,x,y));
+function trap(th,TR,asp,o,s,Hp,D,fx=1,fy=1){
+  const w=1/TR,h=w/asp,vc=o*h,cw=w*fx,ch=h*fy;   // fx, fy : part de la dalle occupée par le contenu
+  const c=[[-cw/2,vc+ch/2],[cw/2,vc+ch/2],[cw/2,vc-ch/2],[-cw/2,vc-ch/2]].map(([x,y])=>project(th,s,Hp,D,x,y));
   if(c.some(v=>!v))return null;
   const yA=c[0].y,yB=c[2].y,wA=Math.abs(c[1].x-c[0].x),wB=Math.abs(c[2].x-c[3].x),top=yA>yB;
   return{c,yTop:top?yA:yB,yBot:top?yB:yA,wTop:top?wA:wB,wBot:top?wB:wA,ks:Math.abs(1-Math.min(wA,wB)/Math.max(wA,wB))*100};
@@ -450,7 +511,7 @@ function covers(t,T){return t&&t.yTop>=T.top-1e-6&&t.yBot<=T.sb+1e-6&&widthAt(t,
 // throw (zoom) le plus long qui couvre encore tout l'écran, centre de l'image visé sur le centre de l'écran
 function cover(T,asp,o,s,Hp,D){
   const phi=Math.atan((T.Hc-Hp)/D);
-  const at=TR=>{const h=1/TR/asp,th=phi-s*Math.atan(o*h);return{th,h,t:trap(th,TR,asp,o,s,Hp,D)};};
+  const at=TR=>{const h=1/TR/asp,th=phi-s*Math.atan(o*h);return{th,h,t:trap(th,TR,asp,o,s,Hp,D,T.fx,T.fy)};};
   let lo=0.25,hi=Math.max(1,D/T.Wc*3);
   if(!covers(at(lo).t,T))return null;
   for(let i=0;i<40;i++){const m=(lo+hi)/2;if(covers(at(m).t,T))lo=m;else hi=m;}
@@ -471,15 +532,20 @@ function common(){
   const p=profile(),T=target(p);if(!T||!(p.lens.min>0&&p.lens.max>=p.lens.min))return null;
   const s=S.mount==='inv'?-1:1,hasShift=p.shMax!==p.shMin;
   const shRef=(hasShift&&S.ref==='mid')?(p.shMin+p.shMax)/2:0,o=(p.offset+shRef)/100;
-  const drop=S.mount==='inv'?(+$('drop').value||0):0;
+  const href=(S.href==='truss'&&S.mount!=='inv')?'under':S.href;
+  const up=+$('lensUp').value||0,hang=+$('hang').value||0;
+  // hauteur de l'axe = hauteur saisie + delta (selon ce que l'utilisateur mesure)
+  const delta=href==='lens'?0:href==='under'?up:up-hang;
   const K=Math.max(0.5,+$('ksMax').value||10),K2=Math.min(K,Math.max(0.2,+$('ksComf').value||5));
   const Hp0=T.Hc-s*o*T.Hcov;
   let band=null;
   if(hasShift){const a=T.Hc-s*(p.offset+p.shMin)/100*T.Hcov,b=T.Hc-s*(p.offset+p.shMax)/100*T.Hcov;band=[Math.min(a,b),Math.max(a,b)];}
-  return{p,T,s,hasShift,shRef,o,drop,K,K2,asp:p.aspect,Hp0,band,dir:s<0?1:-1,
+  return{p,T,s,hasShift,shRef,o,href,delta,K,K2,asp:p.aspect,Hp0,band,dir:s<0?1:-1,
     Dmin:p.lens.min*T.Wc,Dmax:p.lens.max*T.Wc};
 }
-const H=(C,v)=>v+C.drop; // hauteur affichée : bas du truss si suspendu, objectif sinon
+const H=(C,v)=>v-C.delta;   // axe de l'objectif -> hauteur dans la référence choisie
+const LENS=(C,v)=>v+C.delta; // hauteur saisie -> axe de l'objectif
+const REFNAME={lens:'axe objectif',under:'dessous projecteur',truss:'bas du truss'};
 
 /* ---------- Préparer : zone (calculée quand les réglages changent) ---------- */
 let Zc=null,ZcKey='';
@@ -497,7 +563,7 @@ let dragging=false;
 function drawZone(C,keepScale){
   const svg=$('zoneView'),W=360,{T}=C,ink=css('--ink');
   const Z=zone(C);
-  const D=+$('dist').value,Hp=(+$('trim').value)-C.drop;
+  const D=+$('dist').value,Hp=LENS(C,+$('trim').value);
   const okP=D>0&&Number.isFinite(Hp);
   if(!keepScale||!ZV){
     // cadrage : toute la zone d'accroche (keystone ≤ max) + l'écran, quel que soit le point
@@ -551,7 +617,7 @@ function zoneAt(D){
 // zone tactile : le point lui-même, ou l'intérieur de la zone d'accroche (keystone ≤ max)
 function inZone(C,w){
   const Z=Zc;if(!Z||!w)return false;
-  const D=+$('dist').value,Hp=(+$('trim').value)-C.drop,r=28/ZV.k; // ~28 px autour du point
+  const D=+$('dist').value,Hp=LENS(C,+$('trim').value),r=28/ZV.k; // ~28 px autour du point
   if(Math.hypot(w.D-D,w.Hp-Hp)<=r)return true;
   const mD=Math.max(0.15,r*0.5);
   if(w.D<Z[0].D-mD||w.D>Z[Z.length-1].D+mD)return false;
@@ -579,15 +645,15 @@ function inZone(C,w){
 })();
 
 function renderPrep(C,keepScale){
-  const{T,p}=C,inv=C.s<0,unit=inv?'truss':'objectif';
+  const{T,p}=C,inv=C.s<0,unit=REFNAME[C.href];
   $('pDist').innerHTML=C.Dmax-C.Dmin>0.05?`${fmt(C.Dmin,1)}–${fmt(C.Dmax,1)}<small> m</small>`:`${fmt(C.Dmin,2)}<small> m</small>`;
-  $('pSentence').textContent=`Image ${fmt(T.Wc,2)} × ${fmt(T.Hcov,2)} m pour couvrir l'écran de ${fmt(T.sw,2)} × ${fmt(T.sh,2)} m, du zoom grand-angle au zoom télé.`;
+  $('pSentence').textContent=`Contenu ${fmtName(T.ca)} de ${fmt(T.Wcont,2)} × ${fmt(T.Hcont,2)} m pour couvrir l'écran de ${fmt(T.sw,2)} × ${fmt(T.sh,2)} m, du zoom grand-angle au zoom télé.`;
   $('pZoomHead').textContent=`throw ${fmt(p.lens.min,2)}–${fmt(p.lens.max,2)}:1`;
   const msgs=$('pMsgs');msgs.innerHTML='';
   if(inv&&C.Hp0<T.top&&!(C.band&&C.band[1]>=T.top))msgs.innerHTML+=`<div class="alert warn"><span>Sans tilt, l'objectif serait sous le haut de l'écran : en suspendu il faudra incliner.</span></div>`;
   drawZone(C,keepScale);
   // position choisie
-  const D=+$('dist').value,Hp=(+$('trim').value)-C.drop;
+  const D=+$('dist').value,Hp=LENS(C,+$('trim').value);
   const rows=[],ht=[];
   if(D>0&&Number.isFinite(Hp)){
     const f=cover(T,C.asp,C.o,s_(C),Hp,D);
@@ -622,32 +688,36 @@ const s_=C=>C.s;
 const T_=(x,y,txt,anc='start',size=10)=>`<text x="${x}" y="${y}" fill="${css('--muted')}" font-family="DM Mono, monospace" font-size="${size}" text-anchor="${anc}">${txt}</text>`;
 function beamDefs(id){return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${css('--hot')}" stop-opacity=".55"/><stop offset="1" stop-color="${css('--mag')}" stop-opacity=".35"/></linearGradient></defs>`;}
 
-/* ---------- Calcul ---------- */
+/* ---------- Calculer ---------- */
 let R=null;
 function solve(C){
   const{p,T,s,o,asp}=C;const trim=+$('trim').value,D=+$('dist').value;
   if(!(D>0&&Number.isFinite(trim)))return null;
-  const Hp=trim-C.drop;
+  const Hp=LENS(C,trim);
   const f=cover(T,asp,o,s,Hp,D);if(!f)return null;
   const{TR,th,phi,h}=f;
   const TRb=clamp(TR,p.lens.min,p.lens.max);
-  const best=trap(th,TRb,asp,o,s,Hp,D),wide=trap(th,p.lens.min,asp,o,s,Hp,D),tele=trap(th,p.lens.max,asp,o,s,Hp,D);
-  if(!best||!wide||!tele)return null;
+  const best=trap(th,TRb,asp,o,s,Hp,D,T.fx,T.fy),wide=trap(th,p.lens.min,asp,o,s,Hp,D,T.fx,T.fy),tele=trap(th,p.lens.max,asp,o,s,Hp,D,T.fx,T.fy),panel=trap(th,TRb,asp,o,s,Hp,D);
+  if(!best||!wide||!tele||!panel)return null;
   const vmin=(p.offset+p.shMin)/100*h,vmax=(p.offset+p.shMax)/100*h;
   const ta=phi-s*Math.atan(vmin),tb=phi-s*Math.atan(vmax);
   const yAt=v=>{const q=project(th,s,Hp,D,0,v);return q?q.y:NaN};
   return{...C,trim,D,Hp,TR,TRb,th,phi,tolLo:Math.min(ta,tb)-th,tolHi:Math.max(ta,tb)-th,
-    reach:[yAt(vmin),yAt(vmax)].sort((a,b)=>a-b),best,wide,tele,exact:f.t,Wi:T.sw};
+    reach:[yAt(vmin),yAt(vmax)].sort((a,b)=>a-b),best,wide,tele,panel,exact:f.t,Wi:T.sw};
 }
+function fmtName(a){const n={1.7778:'16:9',1.6:'16:10',1.3333:'4:3',2:'2:1',2.39:'2,39:1',1:'1:1'};for(const k in n)if(Math.abs(a-k)<0.01)return n[k];return fmt(a,2)+':1';}
 function renderCalc(C){
   R=C?solve(C):null;
   const msgs=$('rMsgs');msgs.innerHTML='';
   const addMsg=(cls,html)=>{const d=document.createElement('div');d.className='alert '+cls;d.innerHTML='<span>'+html+'</span>';msgs.appendChild(d);};
-  if(!R){$('rTarget').textContent='–';$('rSentence').textContent='';$('rTolHead').textContent='';$('rKv').innerHTML='';$('rCover').innerHTML='';$('rCoverNote').textContent='';$('sideView').innerHTML='';$('frontView').innerHTML='';addMsg('bad','Données incomplètes ou géométrie impossible.');return;}
+  if(!R){$('rTarget').textContent='–';$('rSentence').textContent='';$('rTolHead').textContent='';$('rChips').innerHTML='';$('rKv').innerHTML='';$('rCover').innerHTML='';$('rCoverNote').textContent='';$('sideView').innerHTML='';$('frontView').innerHTML='';addMsg('bad','Données incomplètes ou géométrie impossible.');return;}
   const thD=R.th*DEG,{T,p}=R;
   $('rTarget').textContent=sgn(thD)+'°';
   $('rSentence').textContent=`Incliner de ${fmt(Math.abs(thD))}° ${thD<0?'vers le bas':'vers le haut'}${R.s<0?', montage inversé':''}.`;
-  $('rTolHead').textContent=R.hasShift?`réserve ${sgn(R.tolLo*DEG)}° / ${sgn(R.tolHi*DEG)}°`:'pas de réserve shift';
+  $('rTolHead').textContent=R.hasShift?`· réserve shift ${sgn(R.tolLo*DEG)}° / ${sgn(R.tolHi*DEG)}°`:'· pas de shift';
+  const zc=R.TR<p.lens.min-1e-6?['bad','zoom trop court']:R.TR>p.lens.max+1e-6?['warn','zoom en butée télé']:['ok',`zoom ${fmt(R.TR,2)}:1`];
+  const kc=R.exact.ks<=R.K2?'ok':R.exact.ks<=R.K?'warn':'bad';
+  $('rChips').innerHTML=`<span class="chip ${zc[0]}">${zc[1]}</span><span class="chip ${kc}">keystone ${fmt(R.exact.ks)} %</span>`;
   if(R.TR<p.lens.min-1e-6)addMsg('bad',`Trop près : pour couvrir l'écran il faudrait un throw de ${fmt(R.TR,2)}:1, l'objectif descend à ${fmt(p.lens.min,2)}:1. Même au zoom grand-angle, l'écran ne sera pas couvert.`);
   else if(R.TR>p.lens.max+1e-6)addMsg('warn',`Loin : même au zoom télé (${fmt(p.lens.max,2)}:1) l'image déborde plus que nécessaire. L'écran est couvert, mais avec moins de pixels utiles.`);
   if(R.exact.ks>R.K)addMsg('warn',`Keystone de ${fmt(R.exact.ks)} %, au-delà des ${fmt(R.K,0)} % acceptés. Vois l'onglet Préparer pour une meilleure hauteur.`);
@@ -655,7 +725,7 @@ function renderCalc(C){
   if(R.hasShift){$('refHint').textContent=S.ref==='mid'
       ?`Règle le shift vertical à ${sgn(R.shRef,0)} % (milieu de course) avant de lever : marge identique dans les deux sens.`
       :'Shift vertical au neutre (position home) avant de lever. Marge asymétrique : +50 % d\'un côté, −16 % de l\'autre.';}
-  const kv=[['Hauteur objectif',`${fmt(R.Hp,2)} m`],['Dénivelé vers le centre',`${sgn(T.Hc-R.Hp,2)} m`],
+  const kv=[['Axe de l\'objectif',`${fmt(R.Hp,2)} m`],['Dalle entière, largeur haut / bas',`${fmt(R.panel.wTop,2)} / ${fmt(R.panel.wBot,2)} m`],['Dénivelé vers le centre',`${sgn(T.Hc-R.Hp,2)} m`],
     ['Throw pour couvrir',`${fmt(R.TR,2)}:1`],['Plage objectif',`${fmt(p.lens.min,2)}–${fmt(p.lens.max,2)}:1`],['Keystone',`${fmt(R.exact.ks)} %`]];
   if(R.hasShift)kv.push(['Le shift couvre',`${fmt(R.reach[0],2)} → ${fmt(R.reach[1],2)} m`]);
   $('rKv').innerHTML=kv.map(([a,b])=>`<li><span>${a}</span><b>${b}</b></li>`).join('');
@@ -664,9 +734,11 @@ function renderCalc(C){
   const cov=[['Haut',b.yTop-T.top],['Bas',T.sb-b.yBot],['Côtés, en haut de l\'écran',(widthAt(b,T.top)-T.sw)/2],['Côtés, en bas de l\'écran',(widthAt(b,T.sb)-T.sw)/2]];
   $('rCover').innerHTML=cov.map(([a,v])=>`<li class="${v<-0.01?'bad':''}"><span>${a}</span><b>${cm(v)}</b></li>`).join('');
   let note=R.TRb!==R.TR?`Zoom en butée ${R.TR<p.lens.min?'grand-angle':'télé'}. `:`Zoom à ${fmt(R.TR,2)}:1 : l'image touche juste l'écran sur son bord le plus serré. `;
-  const scr=T.sw/T.sh,ext=(T.Hcov-T.sh)/2,extW=(T.Wc-T.sw)/2;
-  if(ext>0.01)note+=`Écran ${fmt(scr,2)}:1 plus large que le format du projecteur : environ ${fmt(ext*100,0)} cm d'image en trop en haut et en bas, à masquer. `;
-  else if(extW>0.01)note+=`Écran plus haut que le format du projecteur : environ ${fmt(extW*100,0)} cm d'image en trop de chaque côté, à masquer. `;
+  const scr=T.sw/T.sh,ext=(T.Hcont-T.sh)/2,extW=(T.Wcont-T.sw)/2;
+  if(ext>0.01)note+=`Écran ${fmt(scr,2)}:1 plus large que le contenu ${fmtName(T.ca)} : environ ${fmt(ext*100,0)} cm de contenu en trop en haut et en bas, à masquer. `;
+  else if(extW>0.01)note+=`Écran plus haut que le contenu ${fmtName(T.ca)} : environ ${fmt(extW*100,0)} cm de contenu en trop de chaque côté, à masquer. `;
+  if(T.fy<0.995)note+=`Contenu ${fmtName(T.ca)} sur dalle ${fmtName(R.asp)} : bandes noires en haut et en bas de la dalle. `;
+  else if(T.fx<0.995)note+=`Contenu ${fmtName(T.ca)} sur dalle ${fmtName(R.asp)} : bandes noires sur les côtés de la dalle. `;
   if(b.ks>0.5)note+='Les débords supplémentaires viennent du keystone.';
   $('rCoverNote').textContent=note;
   drawSide();drawFront();
@@ -680,7 +752,7 @@ function drawSide(){
   const box=[[-bw,-bh/2],[0,-bh/2],[0,bh/2],[-bw,bh/2]].map(([u,v])=>`${X(u*fx-v*fy)},${Y(R.Hp+u*fy+v*fx)}`).join(' ');
   let g=beamDefs('bs');
   g+=`<line x1="${pad}" y1="${Y(0)}" x2="${W-pad/2}" y2="${Y(0)}" stroke="${ink}" stroke-width="1"/>`;
-  if(R.s<0){g+=`<rect x="${X(-0.25)}" y="${Y(R.trim+0.3)}" width="${0.5*k}" height="${0.3*k}" fill="none" stroke="${ink}" stroke-width="1"/>`;
+  if(R.s<0&&R.href==='truss'){g+=`<rect x="${X(-0.25)}" y="${Y(R.trim+0.3)}" width="${0.5*k}" height="${0.3*k}" fill="none" stroke="${ink}" stroke-width="1"/>`;
     g+=`<path d="M${X(-0.25)} ${Y(R.trim+0.3)} L${X(0)} ${Y(R.trim)} L${X(0.25)} ${Y(R.trim+0.3)}" fill="none" stroke="${ink}" stroke-width=".8"/>`;
     g+=`<line x1="${X(0)}" y1="${Y(R.trim)}" x2="${X(0)}" y2="${Y(R.Hp)}" stroke="${ink}" stroke-width="1"/>`;}
   g+=`<polygon points="${X(0)},${Y(R.Hp)} ${X(R.D)},${Y(R.best.yTop)} ${X(R.D)},${Y(Math.max(0,R.best.yBot))}" fill="url(#bs)"/>`;
@@ -690,7 +762,7 @@ function drawSide(){
   g+=`<line x1="${X(R.D)}" y1="${Y(T.sb)}" x2="${X(R.D)}" y2="${Y(T.top)}" stroke="${ink}" stroke-width="4"/>`;
   if(R.hasShift)g+=`<line x1="${X(R.D)+8}" y1="${Y(R.reach[0])}" x2="${X(R.D)+8}" y2="${Y(R.reach[1])}" stroke="${css('--hot')}" stroke-width="4" stroke-linecap="round"/>`;
   g+=`<circle cx="${X(R.D)}" cy="${Y(T.Hc)}" r="4" fill="${css('--bg')}" stroke="${css('--mag')}" stroke-width="2"/>`;
-  if(R.s<0)g+=T_(X(0)+6,Y(R.trim+0.3)-4,`truss ${fmt(R.trim,2)} m`);
+  if(R.s<0&&R.href==='truss')g+=T_(X(0)+6,Y(R.trim+0.3)-4,`truss ${fmt(R.trim,2)} m`);
   g+=T_((X(0)+X(R.D))/2,Y(0)+14,`${fmt(R.D,2)} m`,'middle');
   g+=T_(X(R.D)-6,Y(T.sb)+12,`bas ${fmt(T.sb,2)}`,'end');
   g+=T_(X(0)+8,Y(R.Hp)+(R.th<0?-8:14),`${sgn(R.th*DEG)}°`,'start',11);
@@ -699,7 +771,7 @@ function drawSide(){
 function drawFront(){
   const svg=$('frontView'),W=360,Ht=250,pad=16,T=R.T,ink=css('--ink');
   const xs=[-T.sw/2,T.sw/2],ys=[T.sb,T.top];
-  [R.wide,R.tele,R.best].forEach(t=>t.c.forEach(p=>{xs.push(p.x);ys.push(p.y);}));
+  [R.wide,R.tele,R.best,R.panel].forEach(t=>t.c.forEach(p=>{xs.push(p.x);ys.push(p.y);}));
   const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
   const k=Math.min((W-2*pad)/(x1-x0),(Ht-2*pad-18)/(y1-y0));
   const ox=(W-(x1-x0)*k)/2,oy=pad+((Ht-2*pad-18)-(y1-y0)*k)/2;
@@ -707,6 +779,7 @@ function drawFront(){
   const poly=t=>t.c.map(p=>`${X(p.x)},${Y(p.y)}`).join(' ');
   let g=beamDefs('bf');
   g+=`<rect x="${X(-T.sw/2)}" y="${Y(T.top)}" width="${T.sw*k}" height="${T.sh*k}" fill="${css('--screen')}" fill-opacity=".55"/>`;
+  if(T.fx<0.995||T.fy<0.995)g+=`<polygon points="${poly(R.panel)}" fill="none" stroke="${css('--mag')}" stroke-width="1" stroke-dasharray="1.5 3"/>`;
   g+=`<polygon points="${poly(R.best)}" fill="url(#bf)" stroke="${css('--mag')}" stroke-width="1.5"/>`;
   [R.wide,R.tele].forEach(t=>{g+=`<polygon points="${poly(t)}" fill="none" stroke="${ink}" stroke-width="1" stroke-dasharray="4 4"/>`;});
   g+=`<rect x="${X(-T.sw/2)}" y="${Y(T.top)}" width="${T.sw*k}" height="${T.sh*k}" fill="none" stroke="${ink}" stroke-width="2"/>`;
@@ -717,15 +790,21 @@ function drawFront(){
 
 /* ---------- Mise à jour globale ---------- */
 function update(fromDrag){
-  const inp={};FIELDS.forEach(f=>inp[f]=$(f).value);inp.model=modelSel.value;inp.lens=lensSel.value;['mount','ref','tab'].forEach(k=>inp[k]=S[k]);store.set('vp-inputs-v6',inp);
+  const inp={};FIELDS.forEach(f=>inp[f]=$(f).value);inp.model=modelSel.value;inp.lens=lensSel.value;['mount','ref','href','tab'].forEach(k=>inp[k]=S[k]);store.set('vp-inputs-v6',inp);
   const p=profile();
   $('refBox').hidden=!(p.shMax!==p.shMin);
-  $('boxDrop').hidden=S.mount!=='inv';
-  $('lblTrim').innerHTML=(S.mount==='inv'?'Truss, bas':'Hauteur objectif')+' <em>m</em>';
+  if(S.mount!=='inv'&&S.href==='truss'){S.href='under';syncSeg('hrefSeg','href');}
+  $('hrefSeg').querySelector('[data-v="truss"]').hidden=S.mount!=='inv';
+  $('boxHang').hidden=S.href!=='truss';
+  $('lblTrim').innerHTML={lens:'Hauteur de l\'axe',under:'Hauteur du dessous',truss:'Hauteur du bas du truss'}[S.href]+' <em>m</em>';
+
+  $('lgPanel').hidden=true;
   if(p.shMax===p.shMin)$('refHint').textContent=p.note||'';
   const C=common();
   if(C){$('centerHint').textContent=`centre à ${fmt(C.T.Hc,2)} m`;
-    $('coverHint').textContent=`L'image doit couvrir tout l'écran : ${fmt(C.T.Wc,2)} × ${fmt(C.T.Hcov,2)} m au format ${C.asp>1.7?'16:9':C.asp>1.55?'16:10':'4:3'}, le surplus se masque ensuite.`;}
+    const T=C.T,bands=T.fx<0.995||T.fy<0.995;
+    $('coverHint').textContent=`Contenu ${fmtName(T.ca)} de ${fmt(T.Wcont,2)} × ${fmt(T.Hcont,2)} m pour couvrir l'écran (le surplus se masque)`+(bands?` ; dalle ${fmtName(C.asp)} entière : ${fmt(T.Wc,2)} × ${fmt(T.Hcov,2)} m, avec bandes noires.`:'.');
+    $('lgPanel').hidden=!bands;}
   else{$('centerHint').textContent='';$('coverHint').textContent='';}
   if(C&&S.tab==='prep')renderPrep(C,!!fromDrag&&dragging);
   renderCalc(C);
@@ -735,19 +814,20 @@ function update(fromDrag){
 /* ---------- Onglets ---------- */
 function tab(which){
   S.tab=which;
+  if(which==='mes')start(false);
   ['prep','calc','mes'].forEach(t=>{$('tab-'+t).setAttribute('aria-selected',t===which);$('pane-'+t).hidden=t!==which;});
-  $('shared').hidden=which==='mes';
+  $('shared').hidden=which!=='prep';
   update();
 }
 ['prep','calc','mes'].forEach(t=>$('tab-'+t).addEventListener('click',()=>tab(t)));
 
-/* ---------- Mesure ---------- */
-const M={got:false,pitch:null,roll:null,flip:store.get('vp-flip')||false,bias:store.get('vp-bias')||{p:0,r:0},calA:null,truss:null};
+/* ---------- Mesurer ---------- */
+const M={got:false,pitch:null,roll:null,flip:store.get('vp-flip')||false,bias:store.get('vp-bias')||{p:0,r:0},calA:null};
 function pushTarget(){$('mTarget').textContent=R?sgn(R.th*DEG)+'°':'–';drawGauge();drawRollGauge();drawScope();refreshMeter();}
 function calInfo(){$('calInfo').textContent=`Biais mémorisé : tilt ${sgn(M.bias.p,2)}°, roll ${sgn(M.bias.r,2)}°.`;}
 calInfo();
-function current(){if(M.pitch==null)return null;let p=M.pitch-M.bias.p,r=M.roll-M.bias.r;if(M.truss!=null)p-=M.truss;return{p,r};}
-function onOri(e){if(e.beta==null||e.gamma==null)return;M.got=true;let b=e.beta,g=e.gamma;if(M.flip){b=-b;g=-g;}
+function current(){if(M.pitch==null)return null;let p=M.pitch-M.bias.p,r=M.roll-M.bias.r;return{p,r};}
+function onOri(e){if(e.beta==null||e.gamma==null)return;if(!M.got){M.got=true;sensorsReady();}let b=e.beta,g=e.gamma;if(M.flip){b=-b;g=-g;}
   const a=0.12;M.pitch=M.pitch==null?b:M.pitch+a*(b-M.pitch);M.roll=M.roll==null?g:M.roll+a*(g-M.roll);}
 let raf=null;function loop(){refreshMeter();raf=requestAnimationFrame(loop);}
 function refreshMeter(){
@@ -824,29 +904,46 @@ function drawRollGauge(){
 }
 function drawRollNeedle(r){const n=document.getElementById('rneedle');if(!n)return;n.setAttribute('transform',`translate(${GX(r,14,326)},0)`);}
 
-let wake=null;
-async function start(){
-  try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
-    const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted'){$('mSensor').textContent='Accès aux capteurs refusé.';return;}}}catch(e){}
-  if(typeof window.DeviceOrientationEvent==='undefined'){$('mSensor').textContent='Ce navigateur ne fournit pas l\'orientation de l\'appareil.';return;}
-  window.addEventListener('deviceorientation',onOri);
-  $('bStart').textContent='Capteurs actifs';$('bStart').disabled=true;
-  ['bCalA','bTruss'].forEach(id=>$(id).disabled=false);
-  $('mSensor').textContent='En attente des capteurs…';
-  try{if(navigator.wakeLock)wake=await navigator.wakeLock.request('screen');}catch(e){}
-  setTimeout(()=>{$('mSensor').textContent=M.got?'Capteurs OK · écran maintenu allumé si autorisé.':
-    'Aucune donnée capteur. Ouvre l\'app depuis son adresse https (GitHub Pages) dans Chrome : les fichiers locaux et la vue artifact bloquent les capteurs.';},1500);
-  if(!raf)loop();
+let wake=null,listening=false;
+/* Capteurs : sur Android/Chrome l'orientation est lisible sans autorisation, on démarre donc
+   d'office en ouvrant l'onglet Mesurer. Sur iPhone (Safari), Apple impose un geste de l'utilisateur
+   (protection de la vie privée) : le bouton reste nécessaire. */
+const needsGesture=()=>typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function';
+function sensorsReady(){
+  $('startBox').hidden=true;calState(M.calA?'b':'a');
+  $('mSensor').textContent='Capteurs actifs · écran maintenu allumé si possible.';
 }
-$('bStart').addEventListener('click',start);
+async function start(fromUser){
+  if(typeof window.DeviceOrientationEvent==='undefined'){$('mSensor').textContent='Ce navigateur ne fournit pas l\'orientation de l\'appareil.';return;}
+  if(needsGesture()){
+    if(fromUser!==true)return;
+    try{const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted'){$('mSensor').textContent='Accès aux capteurs refusé.';return;}}
+    catch(e){$('mSensor').textContent='Accès aux capteurs refusé.';return;}
+  }
+  if(!listening){window.addEventListener('deviceorientation',onOri);listening=true;if(!raf)loop();}
+  try{if(navigator.wakeLock&&!wake)wake=await navigator.wakeLock.request('screen');}catch(e){}
+  if(M.got)return;
+  $('mSensor').textContent='En attente des capteurs…';
+  setTimeout(()=>{if(!M.got)$('mSensor').textContent=fromUser===true
+    ?'Aucune donnée capteur. Ouvre l\'app depuis son adresse https (GitHub Pages) dans Chrome : les fichiers locaux et la vue artifact bloquent les capteurs.'
+    :'Touche « Démarrer les capteurs ».';},1500);
+}
+$('bStart').addEventListener('click',()=>start(true));
+/* Calibration en 3 états : a (poser, mesurer A) -> b (demi-tour, mesurer B) -> done */
+function calState(st){
+  $('calFig').className='calfig st-'+st;
+  $('calStep').textContent={a:'Étape 1 · position A',b:'Étape 2 · demi-tour, position B',done:'Calibré'}[st];
+  $('bCalA').disabled=!M.got||st==='b';
+  $('bCalB').disabled=!M.got||st!=='b';
+  $('bCalA').textContent=st==='done'?'Recommencer · mesure A':'1 · Mesure A';
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&listening){wake=null;start(false);}});
 const flipLabel=()=>{$('bFlip').textContent=M.flip?'Sens inversé · rétablir':'Inverser le sens';};
 $('bFlip').addEventListener('click',()=>{M.flip=!M.flip;store.set('vp-flip',M.flip);M.pitch=null;M.roll=null;flipLabel();});flipLabel();
-$('bCalA').addEventListener('click',()=>{if(M.pitch==null)return;M.calA={p:M.pitch,r:M.roll};$('bCalB').disabled=false;$('calInfo').textContent=`A = ${sgn(M.pitch,2)}° / ${sgn(M.roll,2)}°. Tourne le GSM de 180° au même endroit, attends 2 s, puis mesure B.`;});
+$('bCalA').addEventListener('click',()=>{if(M.pitch==null)return;M.calA={p:M.pitch,r:M.roll};calState('b');$('calInfo').textContent=`A = ${sgn(M.pitch,2)}° / ${sgn(M.roll,2)}°. Fais pivoter le GSM d'un demi-tour sur place, écran vers le haut, attends 2 s, puis Mesure B.`;});
 $('bCalB').addEventListener('click',()=>{if(!M.calA||M.pitch==null)return;
   M.bias={p:(M.calA.p+M.pitch)/2,r:(M.calA.r+M.roll)/2};store.set('vp-bias',M.bias);
-  const surf=(M.calA.p-M.pitch)/2;M.calA=null;$('bCalB').disabled=true;calInfo();$('calInfo').textContent+=` Pente de la surface : ${sgn(surf,2)}°.`;});
-$('bTruss').addEventListener('click',()=>{if(M.pitch==null)return;M.truss=M.pitch-M.bias.p;$('mRef').textContent=`truss ${sgn(M.truss,2)}°`;$('bTrussClr').disabled=false;});
-$('bTrussClr').addEventListener('click',()=>{M.truss=null;$('mRef').textContent='gravité';$('bTrussClr').disabled=true;});
+  const surf=(M.calA.p-M.pitch)/2;M.calA=null;calState('done');calInfo();$('calInfo').textContent+=` Pente de la surface : ${sgn(surf,2)}°.`;});
 
 function redrawAll(){paintMotif();ZV=null;update();}
 try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawAll);}catch(e){}
