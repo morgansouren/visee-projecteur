@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="manifest" href="manifest.webmanifest?v=2">
+<link rel="manifest" href="manifest.webmanifest?v=4">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192-v2.png">
 <link rel="apple-touch-icon" href="apple-touch-icon-v2.png">
 <meta name="theme-color" content="#93cfd3">
-<title>Visée Projecteur</title>
+<title>HangItRight</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap">
 <style>
@@ -165,6 +165,14 @@ nav.tabs{gap:22px}
 .themebtn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:999px;padding:6px 12px 6px 9px;cursor:pointer;flex:0 0 auto}
 .themebtn svg{width:16px;height:16px}
 @media (max-width:380px){nav.tabs button{font-size:17px}}
+.hbtns{display:flex;flex-direction:row;gap:6px;flex:0 0 auto;align-self:flex-start;margin-top:2px}
+.brandrow h1{min-width:0;font-size:clamp(24px,7.4vw,34px)}
+.hbtns .themebtn{padding:6px 10px 6px 8px}
+#themeIco{display:inline-flex}#themeIco svg{display:block}
+@media (max-width:460px){#themeLbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}#themeBtn{padding:6px 8px}}
+nav.tabs button{white-space:nowrap}
+@media (max-width:400px){nav.tabs{gap:16px}nav.tabs button{letter-spacing:.04em}}
+#app{min-height:calc(100vh + 120px)}
 </style>
 </head>
 <body>
@@ -172,128 +180,131 @@ nav.tabs{gap:22px}
 
 <div class="sides" aria-hidden="true"><canvas class="l" id="sideL"></canvas><canvas class="r" id="sideR"></canvas></div>
 
-<div class="wrap">
+<div class="wrap" id="app">
   <div class="band" aria-hidden="true"><canvas id="bandC"></canvas></div>
   <header class="brand" style="margin-top:-74px">
-    <div class="brandrow"><h1>Visée <i>Projecteur</i></h1>
-      <button type="button" class="themebtn" id="themeBtn" aria-label="Thème d'affichage"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg><span id="themeLbl">Auto</span></button></div>
-    <p>Préparer l'accroche · régler au sol</p>
+    <div class="brandrow"><h1 id="appTitle">HangIt<i>Right</i></h1>
+      <div class="hbtns">
+        <button type="button" class="themebtn" id="langBtn"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 10h15M10 2.5c2.1 2.2 3.1 4.7 3.1 7.5s-1 5.3-3.1 7.5M10 2.5C7.9 4.7 6.9 7.2 6.9 10s1 5.3 3.1 7.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg><span id="langLbl">FR</span></button>
+        <button type="button" class="themebtn" id="themeBtn" data-i18n-aria="theme.aria"><span id="themeIco" aria-hidden="true"></span><span id="themeLbl">Auto</span></button>
+      </div></div>
+    <p data-i18n="sub">Accroche projecteur</p>
   </header>
 
   <nav class="tabs" role="tablist">
-    <button id="tab-prep" role="tab" aria-selected="true" aria-controls="pane-prep">Préparer</button>
-    <button id="tab-calc" role="tab" aria-selected="false" aria-controls="pane-calc">Calculer</button>
-    <button id="tab-mes" role="tab" aria-selected="false" aria-controls="pane-mes">Mesurer</button>
+    <button id="tab-prep" role="tab" aria-selected="true" aria-controls="pane-prep" data-i18n="tab.prep">Préparer</button>
+    <button id="tab-calc" role="tab" aria-selected="false" aria-controls="pane-calc" data-i18n="tab.calc">Calculer</button>
+    <button id="tab-mes" role="tab" aria-selected="false" aria-controls="pane-mes" data-i18n="tab.mes">Mesurer</button>
   </nav>
 
-  <!-- ============ COMMUN : écran + projecteur ============ -->
+  <!-- ============ COMMUN : écran + projecteur (visible dans Préparer) ============ -->
   <div id="shared" class="wrap" style="gap:28px">
     <section class="block">
-      <div class="bhead"><h2>Écran</h2><span id="centerHint"></span></div>
+      <div class="bhead"><h2 data-i18n="h.screen">Écran</h2><span id="centerHint"></span></div>
       <div class="fields">
-        <label class="f"><span>Largeur <em>m</em></span><input id="sw" type="number" step="0.01" inputmode="decimal" value="6.00"></label>
-        <label class="f"><span>Hauteur <em>m</em></span><input id="sh" type="number" step="0.01" inputmode="decimal" value="3.00"></label>
-        <label class="f"><span>Bas écran / sol <em>m</em></span><input id="sb" type="number" step="0.01" inputmode="decimal" value="1.20"></label>
-        <label class="f"><span>Format du contenu</span><select id="fmt">
-          <option value="native">Natif du projecteur</option><option value="1.7778">16:9</option><option value="1.6">16:10</option>
-          <option value="1.3333">4:3</option><option value="2">2:1</option><option value="2.39">2,39:1 (scope)</option><option value="1">1:1</option>
+        <label class="f"><span data-i18n-html="f.width">Largeur <em>m</em></span><input id="sw" type="number" step="0.01" inputmode="decimal" value="6.00"></label>
+        <label class="f"><span data-i18n-html="f.height">Hauteur <em>m</em></span><input id="sh" type="number" step="0.01" inputmode="decimal" value="3.00"></label>
+        <label class="f"><span data-i18n-html="f.bottom">Bas écran / sol <em>m</em></span><input id="sb" type="number" step="0.01" inputmode="decimal" value="1.20"></label>
+        <label class="f"><span data-i18n="f.format">Format du contenu</span><select id="fmt">
+          <option value="native" data-i18n="opt.native">Natif du projecteur</option><option value="1.7778">16:9</option><option value="1.6">16:10</option>
+          <option value="1.3333">4:3</option><option value="2">2:1</option><option value="2.39" id="optScope">2,39:1 (scope)</option><option value="1">1:1</option>
         </select></label>
       </div>
       <p class="note" id="coverHint"></p>
     </section>
 
     <section class="block">
-      <div class="bhead"><h2>Projecteur</h2></div>
+      <div class="bhead"><h2 data-i18n="h.projector">Projecteur</h2></div>
       <div class="fields">
-        <label class="f"><span>Modèle</span><select id="model"></select></label>
-        <label class="f"><span>Objectif</span><select id="lens"></select></label>
+        <label class="f"><span data-i18n="f.model">Modèle</span><select id="model"></select></label>
+        <label class="f"><span data-i18n="f.lens">Objectif</span><select id="lens"></select></label>
       </div>
       <div class="cust" id="custBox" hidden>
         <div class="fields">
-          <label class="f"><span>Format</span><select id="cAsp"><option value="1.7778">16:9</option><option value="1.6">16:10</option><option value="1.3333">4:3</option></select></label>
-          <label class="f"><span>Throw min</span><input id="cTrMin" type="number" step="0.01" value="1.50"></label>
-          <label class="f"><span>Throw max</span><input id="cTrMax" type="number" step="0.01" value="2.00"></label>
-          <label class="f"><span>Shift min <em>%</em></span><input id="cShMin" type="number" step="1" value="0"></label>
-          <label class="f"><span>Shift max <em>%</em></span><input id="cShMax" type="number" step="1" value="0"></label>
-          <label class="f"><span>Offset natif <em>%</em></span><input id="cOff" type="number" step="1" value="0"></label>
+          <label class="f"><span data-i18n="f.casp">Format</span><select id="cAsp"><option value="1.7778">16:9</option><option value="1.6">16:10</option><option value="1.3333">4:3</option></select></label>
+          <label class="f"><span data-i18n="f.trmin">Throw min</span><input id="cTrMin" type="number" step="0.01" value="1.50"></label>
+          <label class="f"><span data-i18n="f.trmax">Throw max</span><input id="cTrMax" type="number" step="0.01" value="2.00"></label>
+          <label class="f"><span data-i18n-html="f.shmin">Shift min <em>%</em></span><input id="cShMin" type="number" step="1" value="0"></label>
+          <label class="f"><span data-i18n-html="f.shmax">Shift max <em>%</em></span><input id="cShMax" type="number" step="1" value="0"></label>
+          <label class="f"><span data-i18n-html="f.off">Offset natif <em>%</em></span><input id="cOff" type="number" step="1" value="0"></label>
         </div>
-        <p class="note">Offset natif : distance entre l'axe de l'objectif et le centre de l'image, shift au neutre, en % de la hauteur d'image. 0 = objectif centré ; un offset constructeur de 115 % correspond ici à 65 %.</p>
+        <p class="note" data-i18n="cust.note"></p>
       </div>
       <div class="pillrow">
-        <div><div class="lab">Montage</div>
+        <div><div class="lab" data-i18n="f.mount">Montage</div>
           <div class="pills" id="mountSeg">
-            <button type="button" data-v="inv" aria-pressed="true">Suspendu, inversé</button>
-            <button type="button" data-v="table" aria-pressed="false">À l'endroit</button>
+            <button type="button" data-v="inv" aria-pressed="true" data-i18n="m.inv">Suspendu, inversé</button>
+            <button type="button" data-v="table" aria-pressed="false" data-i18n="m.table">À l'endroit</button>
           </div></div>
-        <div id="refBox"><div class="lab">Shift pendant la visée</div>
+        <div id="refBox"><div class="lab" data-i18n="f.shref">Shift pendant la visée</div>
           <div class="pills" id="refSeg">
-            <button type="button" data-v="zero" aria-pressed="true">Neutre 0 %</button>
-            <button type="button" data-v="mid" aria-pressed="false">Milieu de course</button>
+            <button type="button" data-v="zero" aria-pressed="true" data-i18n="r.zero">Neutre 0 %</button>
+            <button type="button" data-v="mid" aria-pressed="false" data-i18n="r.mid">Milieu de course</button>
           </div></div>
       </div>
       <div class="fields">
-        <label class="f"><span>Keystone confort <em>%</em></span><input id="ksComf" type="number" step="1" inputmode="decimal" value="5"></label>
-        <label class="f"><span>Keystone max <em>%</em></span><input id="ksMax" type="number" step="1" inputmode="decimal" value="10"></label>
+        <label class="f"><span data-i18n-html="f.ksc">Keystone confort <em>%</em></span><input id="ksComf" type="number" step="1" inputmode="decimal" value="5"></label>
+        <label class="f"><span data-i18n-html="f.ksm">Keystone max <em>%</em></span><input id="ksMax" type="number" step="1" inputmode="decimal" value="10"></label>
       </div>
       <p class="note" id="refHint"></p>
       <div class="fields">
-        <label class="f" id="boxLensUp"><span>Axe objectif au-dessus du dessous <em>m · constante du projecteur</em></span><input id="lensUp" type="number" step="0.01" inputmode="decimal" value="0.10"></label>
+        <label class="f" id="boxLensUp"><span data-i18n-html="f.lensup">Axe objectif au-dessus du dessous <em>m · constante du projecteur</em></span><input id="lensUp" type="number" step="0.01" inputmode="decimal" value="0.10"></label>
       </div>
-      <p class="note">Mesurée une fois par projecteur (≈ 10 cm). Elle sert quand tu mesures la hauteur au dessous du projecteur ou au truss.</p>
+      <p class="note" data-i18n="lensup.note"></p>
     </section>
   </div>
 
   <!-- ============ PRÉPARER ============ -->
   <div id="pane-prep" role="tabpanel" class="wrap" style="gap:28px">
     <section class="block" aria-live="polite">
-      <div class="bhead"><h2>Zone d'accroche</h2><span id="pZoomHead"></span></div>
+      <div class="bhead"><h2 data-i18n="h.zone">Zone d'accroche</h2><span id="pZoomHead"></span></div>
       <div class="hero">
-        <span class="k">Distance pour couvrir l'écran, sans tilt</span>
+        <span class="k" data-i18n="p.hero">Distance pour couvrir l'écran, sans tilt</span>
         <span class="big sm" id="pDist">–</span>
         <span class="sentence" id="pSentence"></span>
       </div>
       <div class="alerts" id="pMsgs"></div>
       <figure class="view" style="padding-top:16px">
-        <span class="drag-hint">Fais glisser le point noir : il reste dans la zone d'accroche</span>
-        <svg id="zoneView" viewBox="0 0 360 250" role="img" aria-label="Zone d'accroche, vue de profil. Le point noir est déplaçable."></svg>
+        <span class="drag-hint" data-i18n="p.drag"></span>
+        <svg id="zoneView" viewBox="0 0 360 250" role="img" data-i18n-aria="p.aria"></svg>
         <div class="legend">
-          <span><i class="fill"></i>tilt, keystone ≤ confort</span>
-          <span><i class="fill2"></i>tilt, keystone ≤ max</span>
-          <span><i style="border-color:var(--hot);border-top-width:3px"></i>sans tilt (shift)</span>
-          <span><i style="border-color:var(--ink);border-top-style:dashed"></i>idéale</span>
+          <span><i class="fill"></i><span data-i18n="lg.comf"></span></span>
+          <span><i class="fill2"></i><span data-i18n="lg.max"></span></span>
+          <span><i style="border-color:var(--hot);border-top-width:3px"></i><span data-i18n="lg.notilt"></span></span>
+          <span><i style="border-color:var(--ink);border-top-style:dashed"></i><span data-i18n="lg.ideal"></span></span>
         </div>
       </figure>
     </section>
 
     <section class="block" aria-live="polite">
-      <div class="bhead"><h2>Position choisie</h2><span id="ptHead"></span></div>
+      <div class="bhead"><h2 data-i18n="h.chosen">Position choisie</h2><span id="ptHead"></span></div>
       <ul class="rows" id="ptRows"></ul>
     </section>
 
     <section class="block">
-      <div class="bhead"><h2>Hauteurs à cette distance</h2><span id="htHead"></span></div>
+      <div class="bhead"><h2 data-i18n="h.heights">Hauteurs à cette distance</h2><span id="htHead"></span></div>
       <ul class="rows" id="htRows"></ul>
       <p class="note" id="htNote"></p>
     </section>
   </div>
 
-  <!-- ============ CALCUL ============ -->
+  <!-- ============ CALCULER ============ -->
   <div id="pane-calc" role="tabpanel" class="wrap" style="gap:28px" hidden>
     <section class="block calc-top">
       <div class="fields">
-        <label class="f"><span>Distance objectif → écran <em>m</em></span><input id="dist" type="number" step="0.01" inputmode="decimal" value="12.00"></label>
+        <label class="f"><span data-i18n-html="c.dist">Distance objectif → écran <em>m</em></span><input id="dist" type="number" step="0.01" inputmode="decimal" value="12.00"></label>
       </div>
       <div class="pills" id="hrefSeg" style="padding-top:14px">
-        <button type="button" data-v="lens" aria-pressed="false">Axe objectif</button>
-        <button type="button" data-v="under" aria-pressed="true">Dessous projecteur</button>
-        <button type="button" data-v="truss" aria-pressed="false">Bas du truss</button>
+        <button type="button" data-v="lens" aria-pressed="false" data-i18n="href.lens">Axe objectif</button>
+        <button type="button" data-v="under" aria-pressed="true" data-i18n="href.under">Dessous projecteur</button>
+        <button type="button" data-v="truss" aria-pressed="false" data-i18n="href.truss">Bas du truss</button>
       </div>
       <div class="fields">
         <label class="f"><span id="lblTrim">Hauteur <em>m</em></span><input id="trim" type="number" step="0.01" inputmode="decimal" value="7.05"></label>
-        <label class="f" id="boxHang"><span>Hauteur du support <em>m</em></span><input id="hang" type="number" step="0.01" inputmode="decimal" value="0.45"></label>
+        <label class="f" id="boxHang"><span data-i18n-html="c.hang">Hauteur du support <em>m</em></span><input id="hang" type="number" step="0.01" inputmode="decimal" value="0.45"></label>
       </div>
       <div class="hero hero-calc" aria-live="polite">
-        <span class="k">Tilt à régler <span id="rTolHead" class="tolhead"></span></span>
+        <span class="k"><span data-i18n="c.tilt">Tilt à régler</span> <span id="rTolHead" class="tolhead"></span></span>
         <span class="big" id="rTarget">–</span>
         <span class="sentence" id="rSentence"></span>
         <span class="chips" id="rChips"></span>
@@ -301,21 +312,21 @@ nav.tabs{gap:22px}
     </section>
 
     <section class="block" aria-live="polite">
-      <div class="bhead"><h2>Détails</h2><span>la position est la même que dans Préparer</span></div>
+      <div class="bhead"><h2 data-i18n="h.details">Détails</h2><span data-i18n="c.same">la position est la même que dans Préparer</span></div>
       <div class="alerts" id="rMsgs"></div>
       <ul class="rows" id="rKv"></ul>
       <div class="views">
         <figure class="view">
-          <svg id="sideView" viewBox="0 0 360 210" role="img" aria-label="Vue de profil"></svg>
-          <figcaption>Profil. Le trait épais à droite de l'écran montre ce que le shift peut encore atteindre.</figcaption>
+          <svg id="sideView" viewBox="0 0 360 210" role="img" data-i18n-aria="aria.side"></svg>
+          <figcaption data-i18n="cap.side"></figcaption>
         </figure>
         <figure class="view">
-          <svg id="frontView" viewBox="0 0 360 250" role="img" aria-label="Vue de face : écran, limites du zoom et image projetée"></svg>
+          <svg id="frontView" viewBox="0 0 360 250" role="img" data-i18n-aria="aria.front"></svg>
           <div class="legend">
-            <span><i style="border-color:var(--ink)"></i>écran</span>
-            <span><i class="fill"></i>contenu au meilleur zoom</span>
-            <span id="lgPanel"><i style="border-color:var(--mag);border-top-style:dotted"></i>dalle entière (bandes noires)</span>
-            <span><i style="border-color:var(--ink);border-top-style:dashed"></i>limites du zoom</span>
+            <span><i style="border-color:var(--ink)"></i><span data-i18n="lg.screen"></span></span>
+            <span><i class="fill"></i><span data-i18n="lg.best"></span></span>
+            <span id="lgPanel"><i style="border-color:var(--mag);border-top-style:dotted"></i><span data-i18n="lg.panel"></span></span>
+            <span><i style="border-color:var(--ink);border-top-style:dashed"></i><span data-i18n="lg.zoom"></span></span>
           </div>
         </figure>
       </div>
@@ -324,43 +335,43 @@ nav.tabs{gap:22px}
     </section>
   </div>
 
-  <!-- ============ MESURE ============ -->
+  <!-- ============ MESURER ============ -->
   <div id="pane-mes" role="tabpanel" class="wrap" style="gap:26px" hidden>
     <section class="block">
-      <div class="bhead"><h2>Viseur</h2><span>Cible <b id="mTarget" style="font-family:var(--f-num);font-weight:500">–</b></span></div>
+      <div class="bhead"><h2 data-i18n="h.scope">Viseur</h2><span><span data-i18n="mes.target">Cible</span> <b id="mTarget" style="font-family:var(--f-num);font-weight:500">–</b></span></div>
       <div class="scope"><svg id="scope" viewBox="0 0 300 300" aria-hidden="true"></svg></div>
       <div class="reading st-idle" id="mRead">–<small>°</small></div>
-      <div class="order st-idle" id="mOrder">Capteurs arrêtés</div>
-      <div class="btns" id="startBox"><button class="btn primary" id="bStart" type="button">Démarrer les capteurs</button></div>
+      <div class="order st-idle" id="mOrder" data-i18n="mes.off">Capteurs arrêtés</div>
+      <div class="btns" id="startBox"><button class="btn primary" id="bStart" type="button" data-i18n="mes.start">Démarrer les capteurs</button></div>
       <p class="status" id="mSensor"></p>
       <div class="gauge"><svg id="gauge" viewBox="0 0 340 74" aria-hidden="true"></svg></div>
       <ul class="rows">
-        <li><span>Écart à la cible</span><b id="mDelta">–</b></li>
-        <li><span>Centre image à l'écran</span><b id="mCm">–</b></li>
+        <li><span data-i18n="mes.delta">Écart à la cible</span><b id="mDelta">–</b></li>
+        <li><span data-i18n="mes.cm">Centre image à l'écran</span><b id="mCm">–</b></li>
       </ul>
-      <div class="subhead"><span>Roll · dévers</span><b id="mRoll" class="st-idle">–</b></div>
+      <div class="subhead"><span data-i18n="mes.roll">Roll · dévers</span><b id="mRoll" class="st-idle">–</b></div>
       <div class="gauge" style="padding-top:8px"><svg id="rgauge" viewBox="0 0 340 68" aria-hidden="true"></svg></div>
       <div class="order st-idle" id="mRollOrder" style="font-size:19px">–</div>
       <p class="note" id="mRollCm" style="text-align:center"></p>
     </section>
 
     <section class="block">
-      <div class="bhead"><h2>Pose du GSM</h2></div>
+      <div class="bhead"><h2 data-i18n="h.pose">Pose du GSM</h2></div>
       <ol class="steps">
-        <li><span>À plat sur le capot du projecteur, <b>haut du GSM vers l'objectif</b>, aligné sur l'axe optique.</span></li>
-        <li><span>Lève le haut du GSM : la valeur doit augmenter. Baisse le côté droit : le roll part vers « droite plus bas ». Sinon, inverse le sens.</span></li>
-        <li><span>Règle le tilt jusqu'au vert, puis le roll jusqu'au vert (tolérance ±0,5°).</span></li>
+        <li><span data-i18n-html="pose.1"></span></li>
+        <li><span data-i18n-html="pose.2"></span></li>
+        <li><span id="pose3"></span></li>
       </ol>
-      <p class="note">Le roll réglé au sol ne tient que si le truss reste <b>de niveau sur sa longueur</b> une fois monté. Mets les deux moteurs exactement à la même hauteur (laser ou mètre) : 5 cm d'écart sur 4 m de truss font déjà 0,7° de roll, et ça se corrige aux moteurs, pas sur le projecteur.</p>
+      <p class="note" id="poseNote"></p>
       <div class="btns"><button class="btn" id="bFlip" type="button">Inverser le sens</button></div>
     </section>
 
     <section class="block">
-      <div class="bhead"><h2>Calibration</h2><span>demi-tour à plat</span></div>
+      <div class="bhead"><h2 data-i18n="h.cal">Calibration</h2><span data-i18n="cal.sub">demi-tour à plat</span></div>
       <figure class="calfig st-a" id="calFig">
-        <svg viewBox="-64 0 448 170" role="img" aria-label="Vue de dessus : le GSM reste écran vers le haut et pivote d'un demi-tour sur place">
+        <svg viewBox="-64 0 448 170" role="img" data-i18n-aria="cal.aria">
           <rect x="70" y="10" width="180" height="150" rx="10" class="cal-surface"/>
-          <text x="160" y="154" text-anchor="middle" class="cal-small">surface plane · vue de dessus</text>
+          <text x="160" y="154" text-anchor="middle" class="cal-small" data-i18n="cal.surface">surface plane · vue de dessus</text>
           <path d="M 228 50 A 80 80 0 0 1 228 120" class="cal-arrow" marker-end="url(#calHead)"/>
           <defs><marker id="calHead" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="cal-head"/></marker></defs>
           <g class="cal-phone">
@@ -370,36 +381,65 @@ nav.tabs{gap:22px}
             <path d="M160 58 L152 70 L157 70 L157 86 L163 86 L163 70 L168 70 Z" class="cal-up"/>
           </g>
           <text x="2" y="68" text-anchor="middle" class="cal-label cal-a">A</text>
-          <text x="2" y="86" text-anchor="middle" class="cal-small cal-a">haut vers l'avant</text>
+          <text x="2" y="86" text-anchor="middle" class="cal-small cal-a" data-i18n="cal.a">haut vers l'avant</text>
           <text x="318" y="68" text-anchor="middle" class="cal-label cal-b">B</text>
-          <text x="318" y="86" text-anchor="middle" class="cal-small cal-b">haut vers l'arrière</text>
-          <text x="160" y="28" text-anchor="middle" class="cal-small cal-step" id="calStep">Étape 1 · position A</text>
+          <text x="318" y="86" text-anchor="middle" class="cal-small cal-b" data-i18n="cal.b">haut vers l'arrière</text>
+          <text x="160" y="28" text-anchor="middle" class="cal-small cal-step" id="calStep" data-i18n="cal.step.a">Étape 1 · position A</text>
         </svg>
       </figure>
       <ol class="steps">
-        <li><span>Pose le GSM à plat, <b>écran vers le haut</b>, sur une surface stable. Attends 2 s, touche <b>Mesure A</b>.</span></li>
-        <li><span>Fais-le <b>pivoter d'un demi-tour sur place</b>, toujours écran vers le haut : le haut du GSM pointe maintenant dans l'autre sens. Ne le retourne pas.</span></li>
-        <li><span>Attends 2 s, touche <b>Mesure B</b>. L'app fait la moyenne des deux : le défaut du capteur s'annule, même si la surface penche un peu.</span></li>
+        <li><span data-i18n-html="cal.1"></span></li>
+        <li><span data-i18n-html="cal.2"></span></li>
+        <li><span data-i18n-html="cal.3"></span></li>
       </ol>
       <div class="btns">
-        <button class="btn" id="bCalA" type="button" disabled>1 · Mesure A</button>
-        <button class="btn" id="bCalB" type="button" disabled>2 · Demi-tour, mesure B</button>
+        <button class="btn" id="bCalA" type="button" disabled data-i18n="cal.btnA">1 · Mesure A</button>
+        <button class="btn" id="bCalB" type="button" disabled data-i18n="cal.btnB">2 · Demi-tour, mesure B</button>
       </div>
       <p class="note" id="calInfo"></p>
     </section>
   </div>
-    </section>
-  </div></div>
+</div>
 
 <script>
 (function(){
 "use strict";
 const $=id=>document.getElementById(id);
-const fmt=(v,d=1)=>Number.isFinite(v)?v.toLocaleString('fr-BE',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
-const sgn=(v,d=1)=>Number.isFinite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),d):'–';
 const DEG=180/Math.PI;
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const TOL=0.5; // tolérance « correct », en degrés (tilt et roll)
+
+/* ---------- Langues ----------
+   Architecture : toutes les chaînes visibles passent par tx(clé, variables) et vivent dans le
+   dictionnaire I18N (une entrée par langue, mêmes clés partout). Le HTML ne porte que des clés :
+   data-i18n (texte), data-i18n-html (texte avec <b>/<em>), data-i18n-aria (accessibilité).
+   Le calcul ne dépend jamais de la langue ; seuls les libellés et le format des nombres changent
+   (virgule décimale en FR/NL/ES, point en EN). Changer de langue = réappliquer les libellés + redessiner. */
+const LANGS=['fr','nl','en','es'],LOC={fr:'fr-BE',nl:'nl-BE',en:'en-GB',es:'es-ES'},
+      LNAME={fr:'Français',nl:'Nederlands',en:'English',es:'Español'};
+const I18N={"fr": {"sub": "Accroche projecteur", "tab.prep": "Préparer", "tab.calc": "Calculer", "tab.mes": "Mesurer", "theme.aria": "Thème d'affichage", "theme.auto": "Auto", "theme.light": "Clair", "theme.dark": "Sombre", "lang.aria": "Langue", "h.screen": "Écran", "f.width": "Largeur <em>m</em>", "f.height": "Hauteur <em>m</em>", "f.bottom": "Bas écran / sol <em>m</em>", "f.format": "Format du contenu", "opt.native": "Natif", "center.hint": "centre à {v} m", "cover.hint": "Contenu {f} de {w} × {h} m pour couvrir l'écran (le surplus se masque)", "cover.bands": " ; dalle {p} entière : {pw} × {ph} m, avec bandes noires.", "h.projector": "Projecteur", "f.model": "Modèle", "f.lens": "Objectif", "f.casp": "Format", "f.trmin": "Throw min", "f.trmax": "Throw max", "f.shmin": "Shift min <em>%</em>", "f.shmax": "Shift max <em>%</em>", "f.off": "Offset natif <em>%</em>", "cust.note": "Offset natif : distance entre l'axe de l'objectif et le centre de l'image, shift au neutre, en % de la hauteur d'image. 0 = objectif centré ; un offset constructeur de 115 % correspond ici à 65 %.", "f.mount": "Montage", "m.inv": "Suspendu, inversé", "m.table": "À l'endroit", "f.shref": "Shift pendant la visée", "r.zero": "Neutre 0 %", "r.mid": "Milieu de course", "f.ksc": "Keystone confort <em>%</em>", "f.ksm": "Keystone max <em>%</em>", "f.lensup": "Axe objectif au-dessus du dessous <em>m · constante du projecteur</em>", "lensup.note": "Mesurée une fois par projecteur (≈ 10 cm). Elle sert quand tu mesures la hauteur au dessous du projecteur ou au truss.", "prof.rz.note": "Plage de shift +50 / −16 % (objectif standard). Vérifie la plage réelle si tu montes un autre objectif.", "prof.eh.note": "Pas de lens shift. Offset natif fixe : le centre de l'image est à 65 % de sa hauteur de l'axe de l'objectif.", "lens.std": "Standard", "lens.builtin": "Zoom intégré", "lens.manual": "Valeurs saisies", "model.custom": "Autre modèle (manuel)", "ref.mid": "Règle le shift vertical à {v} % (milieu de course) avant de lever : marge identique dans les deux sens.", "ref.zero": "Shift vertical au neutre (position home) avant de lever. Marge asymétrique : {hi} % d'un côté, {lo} % de l'autre.", "ref.zeroSym": "Shift vertical au neutre (position home) avant de lever : marge de ±{v} % dans les deux sens.", "h.zone": "Zone d'accroche", "p.hero": "Distance pour couvrir l'écran, sans tilt", "p.sentence": "Contenu {f} de {w} × {h} m pour couvrir l'écran de {sw} × {sh} m, du zoom grand-angle au zoom télé.", "p.zoomhead": "throw {a}–{b}:1", "p.warnTilt": "Sans tilt, l'objectif serait sous le haut de l'écran : en suspendu il faudra incliner.", "p.drag": "Fais glisser le point noir : il reste dans la zone d'accroche", "p.aria": "Zone d'accroche, vue de profil. Le point noir est déplaçable.", "lg.comf": "tilt, keystone ≤ confort", "lg.max": "tilt, keystone ≤ max", "lg.notilt": "sans tilt (shift)", "lg.ideal": "idéale", "h.chosen": "Position choisie", "h.heights": "Hauteurs à cette distance", "ref.lens": "axe objectif", "ref.under": "dessous projecteur", "ref.truss": "bas du truss", "row.dist": "Distance", "row.height": "Hauteur {unit}", "row.tilt": "Tilt", "row.ks": "Keystone", "ks.comf": "confortable", "ks.ok": "acceptable", "ks.over": "au-delà du max", "row.zoom": "Zoom nécessaire", "z.in": "dans la plage", "z.near": "trop près : l'écran ne sera pas couvert", "z.far": "trop loin : image plus grande que nécessaire", "pt.ok": "faisable", "pt.no": "hors limites", "row.pos": "Position", "row.impossible": "géométrie impossible", "ht.notilt": "Sans tilt", "ht.ideal": "Idéale", "ht.maxStop": "Max, shift en butée", "ht.minStop": "Min, shift en butée", "ht.tilt": "Avec tilt, shift en réserve", "ht.idealDir": "Idéale, {dir} (keystone {k} %)", "ht.limitDir": "Limite, {dir} (keystone {k} %)", "dir.max": "max", "dir.min": "min", "floor": "sol", "ht.head": "à {d} m · {unit}", "ht.note": "Sans tilt, la hauteur ne dépend pas de la distance : la position verticale de l'image ne dépend que de l'offset et du shift. Avec tilt, plus on est loin, plus on peut {verb} pour le même keystone.", "ht.up": "monter", "ht.down": "descendre", "c.dist": "Distance objectif → écran <em>m</em>", "href.lens": "Axe objectif", "href.under": "Dessous projecteur", "href.truss": "Bas du truss", "c.hang": "Hauteur du support <em>m</em>", "trim.lens": "Hauteur de l'axe", "trim.under": "Hauteur du dessous", "trim.truss": "Hauteur du bas du truss", "c.tilt": "Tilt à régler", "h.details": "Détails", "c.same": "la position est la même que dans Préparer", "aria.side": "Vue de profil", "cap.side": "Profil. Le trait épais à droite de l'écran montre ce que le shift peut encore atteindre.", "aria.front": "Vue de face : écran, limites du zoom et image projetée", "lg.screen": "écran", "lg.best": "contenu au meilleur zoom", "lg.panel": "dalle entière (bandes noires)", "lg.zoom": "limites du zoom", "c.incomplete": "Données incomplètes ou géométrie impossible.", "c.sentence": "Incliner de {v}° {dir}{inv}.", "c.down": "vers le bas", "c.up": "vers le haut", "c.inv": ", montage inversé", "c.res": "· réserve shift {a}° / {b}°", "c.noshift": "· pas de shift", "chip.short": "zoom trop court", "chip.tele": "zoom en butée télé", "chip.zoom": "zoom {v}:1", "chip.ks": "keystone {v} %", "c.near": "Trop près : pour couvrir l'écran il faudrait un throw de {tr}:1, l'objectif descend à {min}:1. Même au zoom grand-angle, l'écran ne sera pas couvert.", "c.far": "Loin : même au zoom télé ({max}:1) l'image déborde plus que nécessaire. L'écran est couvert, mais avec moins de pixels utiles.", "c.ksover": "Keystone de {v} %, au-delà des {k} % acceptés. Vois l'onglet Préparer pour une meilleure hauteur.", "c.noshiftwarn": "Pas de shift, aucune réserve : chaque {d}° déplace l'image de ≈ {cm} cm.", "kv.axis": "Axe de l'objectif", "kv.panel": "Dalle entière, largeur haut / bas", "kv.drop": "Dénivelé vers le centre", "kv.tr": "Throw pour couvrir", "kv.range": "Plage objectif", "kv.ks": "Keystone", "kv.reach": "Le shift couvre", "cov.over": "déborde {v} cm", "cov.under": "manque {v} cm", "cov.top": "Haut", "cov.bot": "Bas", "cov.sideTop": "Côtés, en haut de l'écran", "cov.sideBot": "Côtés, en bas de l'écran", "n.stopWide": "Zoom en butée grand-angle. ", "n.stopTele": "Zoom en butée télé. ", "n.fit": "Zoom à {v}:1 : l'image touche juste l'écran sur son bord le plus serré. ", "n.wider": "Écran {r}:1 plus large que le contenu {f} : environ {cm} cm de contenu en trop en haut et en bas, à masquer. ", "n.taller": "Écran plus haut que le contenu {f} : environ {cm} cm de contenu en trop de chaque côté, à masquer. ", "n.lb": "Contenu {f} sur dalle {p} : bandes noires en haut et en bas de la dalle. ", "n.pb": "Contenu {f} sur dalle {p} : bandes noires sur les côtés de la dalle. ", "n.ks": "Les débords supplémentaires viennent du keystone.", "side.bot": "bas {v}", "front.lbl": "image haut {a} m · bas {b} m · keystone {k} %", "h.scope": "Viseur", "mes.target": "Cible", "mes.off": "Capteurs arrêtés", "mes.start": "Démarrer les capteurs", "mes.delta": "Écart à la cible", "mes.cm": "Centre image à l'écran", "mes.roll": "Roll · dévers", "h.pose": "Pose du GSM", "pose.1": "À plat sur le capot du projecteur, <b>haut du GSM vers l'objectif</b>, aligné sur l'axe optique.", "pose.2": "Lève le haut du GSM : la valeur doit augmenter. Baisse le côté droit : le roll part vers « droite plus bas ». Sinon, inverse le sens.", "pose.3": "Règle le tilt jusqu'au vert, puis le roll jusqu'au vert (tolérance ±{tol}°).", "pose.note": "Le roll réglé au sol ne tient que si le truss reste <b>de niveau sur sa longueur</b> une fois monté. Mets les deux moteurs exactement à la même hauteur (laser ou mètre) : {c} cm d'écart sur {l} m de truss font déjà {a}° de roll, et ça se corrige aux moteurs, pas sur le projecteur.", "flip.normal": "Inverser le sens", "flip.on": "Sens inversé · rétablir", "h.cal": "Calibration", "cal.sub": "demi-tour à plat", "cal.aria": "Vue de dessus : le GSM reste écran vers le haut et pivote d'un demi-tour sur place", "cal.surface": "surface plane · vue de dessus", "cal.a": "haut vers l'avant", "cal.b": "haut vers l'arrière", "cal.step.a": "Étape 1 · position A", "cal.step.b": "Étape 2 · demi-tour, position B", "cal.step.done": "Calibré", "cal.1": "Pose le GSM à plat, <b>écran vers le haut</b>, sur une surface stable. Attends 2 s, touche <b>Mesure A</b>.", "cal.2": "Fais-le <b>pivoter d'un demi-tour sur place</b>, toujours écran vers le haut : le haut du GSM pointe maintenant dans l'autre sens. Ne le retourne pas.", "cal.3": "Attends 2 s, touche <b>Mesure B</b>. L'app fait la moyenne des deux : le défaut du capteur s'annule, même si la surface penche un peu.", "cal.btnA": "1 · Mesure A", "cal.btnB": "2 · Mesure B", "cal.redo": "Recommencer · mesure A", "cal.info": "Biais mémorisé : tilt {p}°, roll {r}°.", "cal.afterA": "A = {p}° / {r}°. Fais pivoter le GSM d'un demi-tour sur place, écran vers le haut, attends 2 s, puis Mesure B.", "cal.slope": " Pente de la surface : {s}°.", "sens.on": "Capteurs actifs · écran maintenu allumé si possible.", "sens.none": "Ce navigateur ne fournit pas l'orientation de l'appareil.", "sens.denied": "Accès aux capteurs refusé.", "sens.wait": "En attente des capteurs…", "sens.nodata": "Aucune donnée capteur. Ouvre l'app depuis son adresse https (GitHub Pages) dans Chrome : les fichiers locaux et la vue artifact bloquent les capteurs.", "sens.tap": "Touche « Démarrer les capteurs ».", "m.level": "De niveau", "m.raiseR": "Remonter le côté droit {v}°", "m.raiseL": "Remonter le côté gauche {v}°", "m.straight": "Image droite.", "m.edge": "Un bord de l'image sera ≈ {cm} cm plus bas que l'autre ({side}, vu depuis le projecteur).", "m.sideR": "côté droit", "m.sideL": "côté gauche", "m.notarget": "Pas de cible", "m.on": "Dans la cible", "m.lower": "Viser plus bas {v}°", "m.higher": "Viser plus haut {v}°", "m.catch": " · rattrapable au shift", "scope.high": "VISE TROP HAUT", "scope.low": "VISE TROP BAS", "scope.L": "G bas", "scope.R": "D bas", "g.low": "vise trop bas", "g.high": "vise trop haut", "rg.L": "gauche plus bas", "rg.R": "droite plus bas"}, "nl": {"sub": "Projector ophangen", "tab.prep": "Plannen", "tab.calc": "Berekenen", "tab.mes": "Meten", "theme.aria": "Weergavethema", "theme.auto": "Auto", "theme.light": "Licht", "theme.dark": "Donker", "lang.aria": "Taal", "h.screen": "Scherm", "f.width": "Breedte <em>m</em>", "f.height": "Hoogte <em>m</em>", "f.bottom": "Onderkant scherm / vloer <em>m</em>", "f.format": "Contentformaat", "opt.native": "Native", "center.hint": "midden op {v} m", "cover.hint": "{f}-content van {w} × {h} m om het scherm te vullen (het overschot wordt gemaskeerd)", "cover.bands": "; volledig {p}-paneel: {pw} × {ph} m, met zwarte balken.", "h.projector": "Projector", "f.model": "Model", "f.lens": "Lens", "f.casp": "Formaat", "f.trmin": "Throw min", "f.trmax": "Throw max", "f.shmin": "Shift min <em>%</em>", "f.shmax": "Shift max <em>%</em>", "f.off": "Native offset <em>%</em>", "cust.note": "Native offset: afstand tussen de lensas en het midden van het beeld, met de shift in neutrale stand, in % van de beeldhoogte. 0 = lens gecentreerd; een fabrieksoffset van 115 % komt hier overeen met 65 %.", "f.mount": "Montage", "m.inv": "Hangend, omgekeerd", "m.table": "Staand", "f.shref": "Shift tijdens het richten", "r.zero": "Neutraal 0 %", "r.mid": "Midden van het bereik", "f.ksc": "Keystone comfort <em>%</em>", "f.ksm": "Keystone max <em>%</em>", "f.lensup": "Lensas boven de onderkant <em>m · vaste waarde per projector</em>", "lensup.note": "Eén keer per projector meten (≈ 10 cm). Wordt gebruikt als je de hoogte meet aan de onderkant van de projector of aan de truss.", "prof.rz.note": "Shiftbereik +50 / −16 % (standaardlens). Controleer het echte bereik als je een andere lens monteert.", "prof.eh.note": "Geen lens shift. Vaste native offset: het beeldmidden ligt 65 % van de beeldhoogte boven de lensas.", "lens.std": "Standaard", "lens.builtin": "Ingebouwde zoom", "lens.manual": "Ingevoerde waarden", "model.custom": "Ander model (handmatig)", "ref.mid": "Zet de verticale shift op {v} % (midden van het bereik) vóór het hijsen: evenveel marge in beide richtingen.", "ref.zero": "Verticale shift in neutrale stand (home-positie) vóór het hijsen. Asymmetrische marge: {hi} % naar de ene kant, {lo} % naar de andere.", "ref.zeroSym": "Verticale shift in neutrale stand (home-positie) vóór het hijsen: ±{v} % marge in beide richtingen.", "h.zone": "Ophangzone", "p.hero": "Afstand om het scherm te vullen, zonder tilt", "p.sentence": "{f}-content van {w} × {h} m om het scherm van {sw} × {sh} m te vullen, van groothoek tot tele.", "p.zoomhead": "throw {a}–{b}:1", "p.warnTilt": "Zonder tilt zou de lens onder de bovenkant van het scherm zitten: hangend moet je kantelen.", "p.drag": "Sleep de zwarte stip: die blijft binnen de ophangzone", "p.aria": "Ophangzone in zijaanzicht. De zwarte stip is versleepbaar.", "lg.comf": "tilt, keystone ≤ comfort", "lg.max": "tilt, keystone ≤ max", "lg.notilt": "zonder tilt (shift)", "lg.ideal": "ideaal", "h.chosen": "Gekozen positie", "h.heights": "Hoogtes op deze afstand", "ref.lens": "lensas", "ref.under": "onderkant projector", "ref.truss": "onderkant truss", "row.dist": "Afstand", "row.height": "Hoogte {unit}", "row.tilt": "Tilt", "row.ks": "Keystone", "ks.comf": "comfortabel", "ks.ok": "aanvaardbaar", "ks.over": "boven het maximum", "row.zoom": "Benodigde zoom", "z.in": "binnen het bereik", "z.near": "te dichtbij: het scherm wordt niet gevuld", "z.far": "te ver: beeld groter dan nodig", "pt.ok": "haalbaar", "pt.no": "buiten de grenzen", "row.pos": "Positie", "row.impossible": "onmogelijke geometrie", "ht.notilt": "Zonder tilt", "ht.ideal": "Ideaal", "ht.maxStop": "Max, shift op de aanslag", "ht.minStop": "Min, shift op de aanslag", "ht.tilt": "Met tilt, shift in reserve", "ht.idealDir": "Ideaal, {dir} (keystone {k} %)", "ht.limitDir": "Grens, {dir} (keystone {k} %)", "dir.max": "max", "dir.min": "min", "floor": "vloer", "ht.head": "op {d} m · {unit}", "ht.note": "Zonder tilt hangt de hoogte niet af van de afstand: de verticale beeldpositie hangt alleen af van offset en shift. Met tilt geldt: hoe verder weg, hoe {verb} je kunt gaan voor dezelfde keystone.", "ht.up": "hoger", "ht.down": "lager", "c.dist": "Afstand lens → scherm <em>m</em>", "href.lens": "Lensas", "href.under": "Onderkant projector", "href.truss": "Onderkant truss", "c.hang": "Hoogte van de ophangbeugel <em>m</em>", "trim.lens": "Hoogte lensas", "trim.under": "Hoogte onderkant", "trim.truss": "Hoogte onderkant truss", "c.tilt": "In te stellen tilt", "h.details": "Details", "c.same": "dezelfde positie als in Plannen", "aria.side": "Zijaanzicht", "cap.side": "Zijaanzicht. De dikke streep rechts van het scherm toont wat de shift nog kan bereiken.", "aria.front": "Vooraanzicht: scherm, zoomgrenzen en geprojecteerd beeld", "lg.screen": "scherm", "lg.best": "content bij de beste zoom", "lg.panel": "volledig paneel (zwarte balken)", "lg.zoom": "zoomgrenzen", "c.incomplete": "Onvolledige gegevens of onmogelijke geometrie.", "c.sentence": "{v}° {dir} kantelen{inv}.", "c.down": "naar beneden", "c.up": "naar boven", "c.inv": ", omgekeerde montage", "c.res": "· shiftreserve {a}° / {b}°", "c.noshift": "· geen shift", "chip.short": "te dichtbij voor de zoom", "chip.tele": "zoom op tele-aanslag", "chip.zoom": "zoom {v}:1", "chip.ks": "keystone {v} %", "c.near": "Te dichtbij: om het scherm te vullen is een throw van {tr}:1 nodig, de lens gaat maar tot {min}:1. Zelfs in groothoek wordt het scherm niet gevuld.", "c.far": "Ver: zelfs in tele ({max}:1) loopt het beeld meer over dan nodig. Het scherm is gevuld, maar met minder bruikbare pixels.", "c.ksover": "Keystone van {v} %, boven de toegestane {k} %. Bekijk het tabblad Plannen voor een betere hoogte.", "c.noshiftwarn": "Geen shift, geen reserve: elke {d}° verschuift het beeld ≈ {cm} cm.", "kv.axis": "Lensas", "kv.panel": "Volledig paneel, breedte boven / onder", "kv.drop": "Hoogteverschil tot het midden", "kv.tr": "Throw om te vullen", "kv.range": "Bereik lens", "kv.ks": "Keystone", "kv.reach": "De shift bereikt", "cov.over": "loopt {v} cm over", "cov.under": "{v} cm tekort", "cov.top": "Boven", "cov.bot": "Onder", "cov.sideTop": "Zijkanten, bovenaan het scherm", "cov.sideBot": "Zijkanten, onderaan het scherm", "n.stopWide": "Zoom op groothoek-aanslag. ", "n.stopTele": "Zoom op tele-aanslag. ", "n.fit": "Zoom op {v}:1: het beeld raakt het scherm net aan de krapste rand. ", "n.wider": "Scherm {r}:1 breder dan de {f}-content: ongeveer {cm} cm content te veel boven en onder, af te maskeren. ", "n.taller": "Scherm hoger dan de {f}-content: ongeveer {cm} cm content te veel aan elke kant, af te maskeren. ", "n.lb": "{f}-content op een {p}-paneel: zwarte balken boven en onder op het paneel. ", "n.pb": "{f}-content op een {p}-paneel: zwarte balken links en rechts op het paneel. ", "n.ks": "De extra overloop komt van de keystone.", "side.bot": "onder {v}", "front.lbl": "beeld boven {a} m · onder {b} m · keystone {k} %", "h.scope": "Vizier", "mes.target": "Doel", "mes.off": "Sensoren uit", "mes.start": "Sensoren starten", "mes.delta": "Afwijking t.o.v. doel", "mes.cm": "Beeldmidden op het scherm", "mes.roll": "Roll · zijdelingse helling", "h.pose": "De gsm plaatsen", "pose.1": "Plat op de behuizing van de projector, <b>bovenkant van de gsm naar de lens</b>, uitgelijnd op de optische as.", "pose.2": "Til de bovenkant van de gsm op: de waarde moet stijgen. Laat de rechterkant zakken: de roll gaat naar ‘rechts lager’. Zo niet, keer de richting om.", "pose.3": "Stel de tilt af tot groen, daarna de roll tot groen (tolerantie ±{tol}°).", "pose.note": "De roll die je op de vloer instelt, klopt alleen als de truss na het hijsen <b>over zijn hele lengte waterpas</b> hangt. Zet beide motoren exact op dezelfde hoogte (laser of meter): {c} cm verschil over {l} m truss geeft al {a}° roll, en dat corrigeer je met de motoren, niet aan de projector.", "flip.normal": "Richting omkeren", "flip.on": "Richting omgekeerd · herstellen", "h.cal": "Kalibratie", "cal.sub": "halve draai, plat", "cal.aria": "Bovenaanzicht: de gsm blijft met het scherm naar boven en draait op dezelfde plek een halve slag", "cal.surface": "vlak · bovenaanzicht", "cal.a": "boven vooraan", "cal.b": "boven achteraan", "cal.step.a": "Stap 1 · positie A", "cal.step.b": "Stap 2 · halve draai, positie B", "cal.step.done": "Gekalibreerd", "cal.1": "Leg de gsm plat, <b>scherm naar boven</b>, op een stabiel oppervlak. Wacht 2 s en tik op <b>Meting A</b>.", "cal.2": "Draai hem <b>een halve slag rond op dezelfde plek</b>, scherm blijft naar boven: de bovenkant van de gsm wijst nu de andere kant op. Leg hem niet met het scherm naar beneden.", "cal.3": "Wacht 2 s en tik op <b>Meting B</b>. De app neemt het gemiddelde van beide: de sensorfout valt weg, ook als het oppervlak licht helt.", "cal.btnA": "1 · Meting A", "cal.btnB": "2 · Meting B", "cal.redo": "Opnieuw · meting A", "cal.info": "Opgeslagen afwijking: tilt {p}°, roll {r}°.", "cal.afterA": "A = {p}° / {r}°. Draai de gsm een halve slag op dezelfde plek, scherm naar boven, wacht 2 s en dan Meting B.", "cal.slope": " Helling van het oppervlak: {s}°.", "sens.on": "Sensoren actief · scherm blijft aan indien mogelijk.", "sens.none": "Deze browser geeft de oriëntatie van het toestel niet door.", "sens.denied": "Toegang tot de sensoren geweigerd.", "sens.wait": "Wachten op de sensoren…", "sens.nodata": "Geen sensorgegevens. Open de app via het https-adres (GitHub Pages) in Chrome: lokale bestanden en de artifact-weergave blokkeren de sensoren.", "sens.tap": "Tik op ‘Sensoren starten’.", "m.level": "Waterpas", "m.raiseR": "Rechterkant {v}° omhoog", "m.raiseL": "Linkerkant {v}° omhoog", "m.straight": "Beeld recht.", "m.edge": "Eén beeldrand komt ≈ {cm} cm lager dan de andere ({side}, gezien vanaf de projector).", "m.sideR": "rechterkant", "m.sideL": "linkerkant", "m.notarget": "Geen doel", "m.on": "Op doel", "m.lower": "{v}° lager richten", "m.higher": "{v}° hoger richten", "m.catch": " · op te vangen met de shift", "scope.high": "RICHT TE HOOG", "scope.low": "RICHT TE LAAG", "scope.L": "L laag", "scope.R": "R laag", "g.low": "richt te laag", "g.high": "richt te hoog", "rg.L": "links lager", "rg.R": "rechts lager"}, "en": {"sub": "Projector rigging", "tab.prep": "Plan", "tab.calc": "Calculate", "tab.mes": "Measure", "theme.aria": "Display theme", "theme.auto": "Auto", "theme.light": "Light", "theme.dark": "Dark", "lang.aria": "Language", "h.screen": "Screen", "f.width": "Width <em>m</em>", "f.height": "Height <em>m</em>", "f.bottom": "Screen bottom / floor <em>m</em>", "f.format": "Content aspect", "opt.native": "Native", "center.hint": "centre at {v} m", "cover.hint": "{f} content of {w} × {h} m to fill the screen (the excess gets masked)", "cover.bands": "; full {p} panel: {pw} × {ph} m, with black bars.", "h.projector": "Projector", "f.model": "Model", "f.lens": "Lens", "f.casp": "Aspect ratio", "f.trmin": "Throw min", "f.trmax": "Throw max", "f.shmin": "Shift min <em>%</em>", "f.shmax": "Shift max <em>%</em>", "f.off": "Native offset <em>%</em>", "cust.note": "Native offset: distance from the lens axis to the image centre with the shift at home, as a % of image height. 0 = lens centred; a manufacturer's offset of 115% corresponds to 65% here.", "f.mount": "Mounting", "m.inv": "Flown, inverted", "m.table": "Upright (table)", "f.shref": "Shift while aiming", "r.zero": "Home 0%", "r.mid": "Mid-travel", "f.ksc": "Comfort keystone <em>%</em>", "f.ksm": "Max keystone <em>%</em>", "f.lensup": "Lens axis above the underside <em>m · projector constant</em>", "lensup.note": "Measured once per projector (≈ 10 cm). Used when you measure height at the projector's underside or at the truss.", "prof.rz.note": "Shift range +50 / −16% (standard lens). Check the actual range if you fit a different lens.", "prof.eh.note": "No lens shift. Fixed native offset: the image centre sits 65% of the image height from the lens axis.", "lens.std": "Standard", "lens.builtin": "Built-in zoom", "lens.manual": "Entered values", "model.custom": "Other model (manual)", "ref.mid": "Set vertical shift to {v}% (mid-travel) before flying: equal margin both ways.", "ref.zero": "Vertical shift at home before flying. Asymmetric margin: {hi}% one way, {lo}% the other.", "ref.zeroSym": "Vertical shift at home before flying: ±{v}% margin both ways.", "h.zone": "Hang zone", "p.hero": "Distance to fill the screen, no tilt", "p.sentence": "{f} content of {w} × {h} m to fill the {sw} × {sh} m screen, from wide to tele end of the zoom.", "p.zoomhead": "throw {a}–{b}:1", "p.warnTilt": "With no tilt the lens would sit below the top of the screen: flown, you'll have to tilt.", "p.drag": "Drag the black dot: it stays inside the hang zone", "p.aria": "Hang zone, side view. The black dot can be dragged.", "lg.comf": "tilt, keystone ≤ comfort", "lg.max": "tilt, keystone ≤ max", "lg.notilt": "no tilt (shift)", "lg.ideal": "ideal", "h.chosen": "Chosen position", "h.heights": "Heights at this distance", "ref.lens": "lens axis", "ref.under": "projector underside", "ref.truss": "truss bottom", "row.dist": "Distance", "row.height": "Height · {unit}", "row.tilt": "Tilt", "row.ks": "Keystone", "ks.comf": "comfortable", "ks.ok": "acceptable", "ks.over": "above max", "row.zoom": "Zoom needed", "z.in": "within range", "z.near": "too close: the screen won't be filled", "z.far": "too far: image larger than needed", "pt.ok": "feasible", "pt.no": "out of limits", "row.pos": "Position", "row.impossible": "impossible geometry", "ht.notilt": "No tilt", "ht.ideal": "Ideal", "ht.maxStop": "Max, shift at end stop", "ht.minStop": "Min, shift at end stop", "ht.tilt": "With tilt, shift kept in reserve", "ht.idealDir": "Ideal, {dir} (keystone {k}%)", "ht.limitDir": "Limit, {dir} (keystone {k}%)", "dir.max": "max", "dir.min": "min", "floor": "floor", "ht.head": "at {d} m · {unit}", "ht.note": "Without tilt, height doesn't depend on distance: the vertical image position depends only on offset and shift. With tilt, the farther away you are, the {verb} you can go for the same keystone.", "ht.up": "higher", "ht.down": "lower", "c.dist": "Lens → screen distance <em>m</em>", "href.lens": "Lens axis", "href.under": "Projector underside", "href.truss": "Truss bottom", "c.hang": "Mount drop <em>m</em>", "trim.lens": "Lens axis height", "trim.under": "Underside height", "trim.truss": "Truss bottom height", "c.tilt": "Tilt to set", "h.details": "Details", "c.same": "same position as in Plan", "aria.side": "Side view", "cap.side": "Side view. The thick line to the right of the screen shows what the shift can still reach.", "aria.front": "Front view: screen, zoom limits and projected image", "lg.screen": "screen", "lg.best": "content at best zoom", "lg.panel": "full panel (black bars)", "lg.zoom": "zoom limits", "c.incomplete": "Incomplete data or impossible geometry.", "c.sentence": "Tilt {v}° {dir}{inv}.", "c.down": "down", "c.up": "up", "c.inv": ", inverted mount", "c.res": "· shift reserve {a}° / {b}°", "c.noshift": "· no shift", "chip.short": "too close for the zoom", "chip.tele": "zoom at tele end", "chip.zoom": "zoom {v}:1", "chip.ks": "keystone {v}%", "c.near": "Too close: filling the screen needs a {tr}:1 throw, but the lens only goes down to {min}:1. Even at the wide end, the screen won't be filled.", "c.far": "Far: even at the tele end ({max}:1) the image overshoots more than needed. The screen is filled, but with fewer usable pixels.", "c.ksover": "Keystone of {v}%, above the {k}% allowed. Check the Plan tab for a better height.", "c.noshiftwarn": "No shift, no reserve: every {d}° moves the image ≈ {cm} cm.", "kv.axis": "Lens axis", "kv.panel": "Full panel, width top / bottom", "kv.drop": "Height difference to centre", "kv.tr": "Throw to fill", "kv.range": "Lens range", "kv.ks": "Keystone", "kv.reach": "Shift reaches", "cov.over": "overshoots {v} cm", "cov.under": "short by {v} cm", "cov.top": "Top", "cov.bot": "Bottom", "cov.sideTop": "Sides, at the top of the screen", "cov.sideBot": "Sides, at the bottom of the screen", "n.stopWide": "Zoom at the wide end. ", "n.stopTele": "Zoom at the tele end. ", "n.fit": "Zoom at {v}:1: the image just meets the screen at its tightest edge. ", "n.wider": "{r}:1 screen wider than the {f} content: about {cm} cm of excess content top and bottom, to be masked. ", "n.taller": "Screen taller than the {f} content: about {cm} cm of excess content each side, to be masked. ", "n.lb": "{f} content on a {p} panel: black bars top and bottom of the panel (letterbox). ", "n.pb": "{f} content on a {p} panel: black bars on the sides of the panel (pillarbox). ", "n.ks": "The extra overshoot comes from keystone.", "side.bot": "bottom {v}", "front.lbl": "image top {a} m · bottom {b} m · keystone {k}%", "h.scope": "Sight", "mes.target": "Target", "mes.off": "Sensors off", "mes.start": "Start sensors", "mes.delta": "Deviation from target", "mes.cm": "Image centre on screen", "mes.roll": "Roll", "h.pose": "Placing the phone", "pose.1": "Flat on the projector housing, <b>top of the phone towards the lens</b>, lined up with the optical axis.", "pose.2": "Lift the top of the phone: the value should go up. Lower the right side: roll moves towards “right lower”. If not, reverse the direction.", "pose.3": "Set tilt until it turns green, then roll until green (tolerance ±{tol}°).", "pose.note": "Roll set on the floor only holds if the truss stays <b>level along its length</b> once flown. Bring both motors to exactly the same height (laser or tape): {c} cm of difference over {l} m of truss already gives {a}° of roll, and that's fixed at the motors, not on the projector.", "flip.normal": "Reverse direction", "flip.on": "Direction reversed · restore", "h.cal": "Calibration", "cal.sub": "half turn, flat", "cal.aria": "Top view: the phone stays screen up and rotates a half turn in place", "cal.surface": "flat surface · top view", "cal.a": "top forward", "cal.b": "top backward", "cal.step.a": "Step 1 · position A", "cal.step.b": "Step 2 · half turn, position B", "cal.step.done": "Calibrated", "cal.1": "Lay the phone flat, <b>screen up</b>, on a stable surface. Wait 2 s, then tap <b>Measure A</b>.", "cal.2": "<b>Rotate it a half turn in place</b>, still screen up: the top of the phone now points the other way. Don't flip it over.", "cal.3": "Wait 2 s, then tap <b>Measure B</b>. The app averages the two: the sensor error cancels out, even if the surface slopes slightly.", "cal.btnA": "1 · Measure A", "cal.btnB": "2 · Measure B", "cal.redo": "Start again · measure A", "cal.info": "Stored bias: tilt {p}°, roll {r}°.", "cal.afterA": "A = {p}° / {r}°. Rotate the phone a half turn in place, screen up, wait 2 s, then Measure B.", "cal.slope": " Surface slope: {s}°.", "sens.on": "Sensors on · screen kept awake if possible.", "sens.none": "This browser doesn't provide device orientation.", "sens.denied": "Sensor access denied.", "sens.wait": "Waiting for sensors…", "sens.nodata": "No sensor data. Open the app from its https address (GitHub Pages) in Chrome: local files and the artifact view block the sensors.", "sens.tap": "Tap “Start sensors”.", "m.level": "Level", "m.raiseR": "Raise right side {v}°", "m.raiseL": "Raise left side {v}°", "m.straight": "Image level.", "m.edge": "One edge of the image will be ≈ {cm} cm lower than the other ({side}, seen from the projector).", "m.sideR": "right side", "m.sideL": "left side", "m.notarget": "No target", "m.on": "On target", "m.lower": "Aim {v}° lower", "m.higher": "Aim {v}° higher", "m.catch": " · recoverable with shift", "scope.high": "AIMING TOO HIGH", "scope.low": "AIMING TOO LOW", "scope.L": "L low", "scope.R": "R low", "g.low": "aiming too low", "g.high": "aiming too high", "rg.L": "left lower", "rg.R": "right lower"}, "es": {"sub": "Colgado de proyectores", "tab.prep": "Preparar", "tab.calc": "Calcular", "tab.mes": "Medir", "theme.aria": "Tema de visualización", "theme.auto": "Auto", "theme.light": "Claro", "theme.dark": "Oscuro", "lang.aria": "Idioma", "h.screen": "Pantalla", "f.width": "Ancho <em>m</em>", "f.height": "Alto <em>m</em>", "f.bottom": "Borde inferior / suelo <em>m</em>", "f.format": "Formato del contenido", "opt.native": "Nativo", "center.hint": "centro a {v} m", "cover.hint": "Contenido {f} de {w} × {h} m para cubrir la pantalla (el sobrante se enmascara)", "cover.bands": "; panel {p} completo: {pw} × {ph} m, con barras negras.", "h.projector": "Proyector", "f.model": "Modelo", "f.lens": "Óptica", "f.casp": "Formato", "f.trmin": "Throw mín.", "f.trmax": "Throw máx.", "f.shmin": "Shift mín. <em>%</em>", "f.shmax": "Shift máx. <em>%</em>", "f.off": "Offset nativo <em>%</em>", "cust.note": "Offset nativo: distancia entre el eje de la óptica y el centro de la imagen, con el shift en posición neutra, en % de la altura de imagen. 0 = óptica centrada; un offset de fabricante del 115 % equivale aquí al 65 %.", "f.mount": "Montaje", "m.inv": "Colgado, invertido", "m.table": "Sobre mesa", "f.shref": "Shift durante el ajuste", "r.zero": "Neutro 0 %", "r.mid": "Mitad del recorrido", "f.ksc": "Keystone cómodo <em>%</em>", "f.ksm": "Keystone máx. <em>%</em>", "f.lensup": "Eje óptico sobre la base <em>m · constante del proyector</em>", "lensup.note": "Se mide una vez por proyector (≈ 10 cm). Se usa cuando mides la altura en la base del proyector o en el truss.", "prof.rz.note": "Rango de shift +50 / −16 % (óptica estándar). Comprueba el rango real si montas otra óptica.", "prof.eh.note": "Sin lens shift. Offset nativo fijo: el centro de la imagen está al 65 % de su altura respecto al eje de la óptica.", "lens.std": "Estándar", "lens.builtin": "Zoom integrado", "lens.manual": "Valores introducidos", "model.custom": "Otro modelo (manual)", "ref.mid": "Pon el shift vertical al {v} % (mitad del recorrido) antes de elevar: mismo margen en ambos sentidos.", "ref.zero": "Shift vertical en posición neutra (home) antes de elevar. Margen asimétrico: {hi} % hacia un lado, {lo} % hacia el otro.", "ref.zeroSym": "Shift vertical en posición neutra (home) antes de elevar: margen de ±{v} % en ambos sentidos.", "h.zone": "Zona de colgado", "p.hero": "Distancia para cubrir la pantalla, sin tilt", "p.sentence": "Contenido {f} de {w} × {h} m para cubrir la pantalla de {sw} × {sh} m, del gran angular al tele del zoom.", "p.zoomhead": "throw {a}–{b}:1", "p.warnTilt": "Sin tilt, la óptica quedaría por debajo del borde superior de la pantalla: colgado, habrá que inclinar.", "p.drag": "Arrastra el punto negro: se queda dentro de la zona de colgado", "p.aria": "Zona de colgado, vista lateral. El punto negro se puede arrastrar.", "lg.comf": "tilt, keystone ≤ cómodo", "lg.max": "tilt, keystone ≤ máx.", "lg.notilt": "sin tilt (shift)", "lg.ideal": "ideal", "h.chosen": "Posición elegida", "h.heights": "Alturas a esta distancia", "ref.lens": "eje óptico", "ref.under": "base del proyector", "ref.truss": "parte baja del truss", "row.dist": "Distancia", "row.height": "Altura · {unit}", "row.tilt": "Tilt", "row.ks": "Keystone", "ks.comf": "cómodo", "ks.ok": "aceptable", "ks.over": "por encima del máx.", "row.zoom": "Zoom necesario", "z.in": "dentro del rango", "z.near": "demasiado cerca: la pantalla no quedará cubierta", "z.far": "demasiado lejos: imagen más grande de lo necesario", "pt.ok": "viable", "pt.no": "fuera de límites", "row.pos": "Posición", "row.impossible": "geometría imposible", "ht.notilt": "Sin tilt", "ht.ideal": "Ideal", "ht.maxStop": "Máx., shift a tope", "ht.minStop": "Mín., shift a tope", "ht.tilt": "Con tilt, shift en reserva", "ht.idealDir": "Ideal, {dir} (keystone {k} %)", "ht.limitDir": "Límite, {dir} (keystone {k} %)", "dir.max": "máx.", "dir.min": "mín.", "floor": "suelo", "ht.head": "a {d} m · {unit}", "ht.note": "Sin tilt, la altura no depende de la distancia: la posición vertical de la imagen solo depende del offset y del shift. Con tilt, cuanto más lejos, más {verb} se puede ir con el mismo keystone.", "ht.up": "alto", "ht.down": "bajo", "c.dist": "Distancia óptica → pantalla <em>m</em>", "href.lens": "Eje óptico", "href.under": "Base del proyector", "href.truss": "Parte baja del truss", "c.hang": "Altura del soporte <em>m</em>", "trim.lens": "Altura del eje óptico", "trim.under": "Altura de la base", "trim.truss": "Altura de la parte baja del truss", "c.tilt": "Tilt a ajustar", "h.details": "Detalles", "c.same": "la misma posición que en Preparar", "aria.side": "Vista lateral", "cap.side": "Vista lateral. La línea gruesa a la derecha de la pantalla muestra lo que el shift aún puede alcanzar.", "aria.front": "Vista frontal: pantalla, límites del zoom e imagen proyectada", "lg.screen": "pantalla", "lg.best": "contenido con el mejor zoom", "lg.panel": "panel completo (barras negras)", "lg.zoom": "límites del zoom", "c.incomplete": "Datos incompletos o geometría imposible.", "c.sentence": "Inclinar {v}° {dir}{inv}.", "c.down": "hacia abajo", "c.up": "hacia arriba", "c.inv": ", montaje invertido", "c.res": "· reserva de shift {a}° / {b}°", "c.noshift": "· sin shift", "chip.short": "demasiado cerca para el zoom", "chip.tele": "zoom a tope en tele", "chip.zoom": "zoom {v}:1", "chip.ks": "keystone {v} %", "c.near": "Demasiado cerca: para cubrir la pantalla haría falta un throw de {tr}:1 y la óptica solo baja hasta {min}:1. Ni con el gran angular quedará cubierta.", "c.far": "Lejos: incluso en tele ({max}:1) la imagen desborda más de lo necesario. La pantalla queda cubierta, pero con menos píxeles útiles.", "c.ksover": "Keystone del {v} %, por encima del {k} % aceptado. Mira la pestaña Preparar para una altura mejor.", "c.noshiftwarn": "Sin shift, sin reserva: cada {d}° desplaza la imagen ≈ {cm} cm.", "kv.axis": "Eje óptico", "kv.panel": "Panel completo, ancho arriba / abajo", "kv.drop": "Desnivel hasta el centro", "kv.tr": "Throw para cubrir", "kv.range": "Rango de la óptica", "kv.ks": "Keystone", "kv.reach": "El shift alcanza", "cov.over": "desborda {v} cm", "cov.under": "faltan {v} cm", "cov.top": "Arriba", "cov.bot": "Abajo", "cov.sideTop": "Laterales, arriba de la pantalla", "cov.sideBot": "Laterales, abajo de la pantalla", "n.stopWide": "Zoom a tope en gran angular. ", "n.stopTele": "Zoom a tope en tele. ", "n.fit": "Zoom a {v}:1: la imagen toca justo la pantalla por su borde más ajustado. ", "n.wider": "Pantalla {r}:1 más ancha que el contenido {f}: unos {cm} cm de contenido de más arriba y abajo, a enmascarar. ", "n.taller": "Pantalla más alta que el contenido {f}: unos {cm} cm de contenido de más a cada lado, a enmascarar. ", "n.lb": "Contenido {f} en panel {p}: barras negras arriba y abajo del panel. ", "n.pb": "Contenido {f} en panel {p}: barras negras a los lados del panel. ", "n.ks": "Los desbordes adicionales vienen del keystone.", "side.bot": "base {v}", "front.lbl": "imagen arriba {a} m · abajo {b} m · keystone {k} %", "h.scope": "Visor", "mes.target": "Objetivo", "mes.off": "Sensores parados", "mes.start": "Iniciar sensores", "mes.delta": "Desviación respecto al objetivo", "mes.cm": "Centro de imagen en pantalla", "mes.roll": "Roll · inclinación lateral", "h.pose": "Colocar el teléfono", "pose.1": "Plano sobre la carcasa del proyector, <b>parte superior del teléfono hacia la óptica</b>, alineado con el eje óptico.", "pose.2": "Levanta la parte superior del teléfono: el valor debe subir. Baja el lado derecho: el roll va hacia «derecha más baja». Si no, invierte el sentido.", "pose.3": "Ajusta el tilt hasta el verde y luego el roll hasta el verde (tolerancia ±{tol}°).", "pose.note": "El roll ajustado en el suelo solo se mantiene si el truss queda <b>nivelado en toda su longitud</b> una vez elevado. Pon los dos motores exactamente a la misma altura (láser o metro): {c} cm de diferencia en {l} m de truss ya dan {a}° de roll, y eso se corrige en los motores, no en el proyector.", "flip.normal": "Invertir el sentido", "flip.on": "Sentido invertido · restablecer", "h.cal": "Calibración", "cal.sub": "media vuelta, en plano", "cal.aria": "Vista superior: el teléfono sigue con la pantalla hacia arriba y gira media vuelta sobre sí mismo", "cal.surface": "mesa plana · vista superior", "cal.a": "arriba al frente", "cal.b": "arriba atrás", "cal.step.a": "Paso 1 · posición A", "cal.step.b": "Paso 2 · media vuelta, posición B", "cal.step.done": "Calibrado", "cal.1": "Coloca el teléfono en plano, <b>pantalla hacia arriba</b>, sobre una superficie estable. Espera 2 s y toca <b>Medida A</b>.", "cal.2": "<b>Gíralo media vuelta sobre sí mismo</b>, siempre con la pantalla hacia arriba: la parte superior del teléfono apunta ahora al otro lado. No le des la vuelta.", "cal.3": "Espera 2 s y toca <b>Medida B</b>. La app promedia las dos: el error del sensor se anula, aunque la superficie esté algo inclinada.", "cal.btnA": "1 · Medida A", "cal.btnB": "2 · Medida B", "cal.redo": "Repetir · medida A", "cal.info": "Sesgo guardado: tilt {p}°, roll {r}°.", "cal.afterA": "A = {p}° / {r}°. Gira el teléfono media vuelta sobre sí mismo, pantalla hacia arriba, espera 2 s y luego Medida B.", "cal.slope": " Pendiente de la superficie: {s}°.", "sens.on": "Sensores activos · pantalla encendida si es posible.", "sens.none": "Este navegador no proporciona la orientación del dispositivo.", "sens.denied": "Acceso a los sensores denegado.", "sens.wait": "Esperando a los sensores…", "sens.nodata": "Sin datos de los sensores. Abre la app desde su dirección https (GitHub Pages) en Chrome: los archivos locales y la vista de artifact bloquean los sensores.", "sens.tap": "Toca «Iniciar sensores».", "m.level": "Nivelado", "m.raiseR": "Subir el lado derecho {v}°", "m.raiseL": "Subir el lado izquierdo {v}°", "m.straight": "Imagen recta.", "m.edge": "Un borde de la imagen quedará ≈ {cm} cm más bajo que el otro ({side}, visto desde el proyector).", "m.sideR": "lado derecho", "m.sideL": "lado izquierdo", "m.notarget": "Sin objetivo", "m.on": "En el objetivo", "m.lower": "Apuntar {v}° más bajo", "m.higher": "Apuntar {v}° más alto", "m.catch": " · recuperable con el shift", "scope.high": "DEMASIADO ALTO", "scope.low": "DEMASIADO BAJO", "scope.L": "Izq. baja", "scope.R": "Der. baja", "g.low": "apunta muy bajo", "g.high": "apunta muy alto", "rg.L": "izquierda más baja", "rg.R": "derecha más baja"}};
+let lang=(()=>{let l=null;try{l=localStorage.getItem('vp-lang');}catch(e){}
+  if(!LANGS.includes(l)){const n=String(navigator.language||'fr').slice(0,2).toLowerCase();l=LANGS.includes(n)?n:'fr';}
+  return l;})();
+function tx(k,v){let s=I18N[lang]&&I18N[lang][k];if(s==null)s=I18N.fr[k];if(s==null)return k;
+  return v?s.replace(/\{(\w+)\}/g,(m,n)=>v[n]!=null?v[n]:m):s;}
+const fmt=(v,d=1)=>Number.isFinite(v)?v.toLocaleString(LOC[lang]||'fr-BE',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
+const sgn=(v,d=1)=>Number.isFinite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),d):'–';
+const PCT=()=>lang==='en'?'%':' %';   // « 10 % » en FR/NL/ES, « 10% » en EN
+function applyStatic(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=tx(el.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{el.innerHTML=tx(el.dataset.i18nHtml);});
+  document.querySelectorAll('[data-i18n-aria]').forEach(el=>{el.setAttribute('aria-label',tx(el.dataset.i18nAria));});
+  // textes statiques qui contiennent des nombres au format de la langue
+  $('optScope').textContent=fmt(2.39,2)+':1 (scope)';
+  $('pose3').innerHTML=tx('pose.3',{tol:fmt(TOL,1)});
+  $('poseNote').innerHTML=tx('pose.note',{c:fmt(5,0),l:fmt(4,0),a:fmt(Math.atan(0.05/4)*DEG,1)});
+  $('langLbl').textContent=lang.toUpperCase();
+  $('langBtn').setAttribute('aria-label',tx('lang.aria')+' : '+LNAME[lang]);
+}
+applyStatic();
 /* ---------- Motif : barres verticales floues orange → magenta ---------- */
 function stripes(cv,side){
   const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);
@@ -426,10 +466,15 @@ function stripes(cv,side){
 function paintMotif(){stripes($('bandC'),'band');stripes($('sideL'),'l');stripes($('sideR'),'r');}
 
 /* ---------- Thème : auto (suit le système) / clair / sombre ---------- */
-const THEMES=['auto','light','dark'],TLBL={auto:'Auto',light:'Clair',dark:'Sombre'};
-function applyTheme(t){
-  if(t==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t);
-  $('themeLbl').textContent=TLBL[t];
+const THEMES=['auto','light','dark'];
+const TICO={auto:'<circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/>',
+ light:'<circle cx="10" cy="10" r="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 1.8v2.4M10 15.8v2.4M1.8 10h2.4M15.8 10h2.4M4.2 4.2l1.7 1.7M14.1 14.1l1.7 1.7M4.2 15.8l1.7-1.7M14.1 5.9l1.7-1.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+ dark:'<path d="M15.8 12.6A7 7 0 0 1 7.4 4.2 7 7 0 1 0 15.8 12.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>'};
+function applyTheme(th){
+  if(th==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',th);
+  $('themeLbl').textContent=tx('theme.'+th);
+  $('themeIco').innerHTML='<svg viewBox="0 0 20 20">'+TICO[th]+'</svg>';
+  $('themeBtn').title=tx('theme.'+th);
   const m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
 }
 let theme='auto';try{theme=localStorage.getItem('vp-theme')||'auto';}catch(e){}
@@ -438,33 +483,40 @@ applyTheme(theme);
 $('themeBtn').addEventListener('click',()=>{theme=THEMES[(THEMES.indexOf(theme)+1)%3];try{localStorage.setItem('vp-theme',theme);}catch(e){}applyTheme(theme);});
 try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>applyTheme(theme));}catch(e){}
 
-/* ---------- Profils ---------- */
+/* ---------- Profils ----------
+   Les profils ne contiennent que des données ; les noms affichés (« Standard », « Zoom intégré »…)
+   sont fabriqués à l'affichage dans la langue courante, avec le séparateur décimal de cette langue. */
 const PROFILES={
-  rz770:{name:'Panasonic PT-RZ770',aspect:16/10,offset:0,shMin:-16,shMax:50,
-    note:'Plage de shift +50 / −16 % (objectif standard). Vérifie la plage réelle si tu montes un autre objectif.',
+  rz770:{name:'Panasonic PT-RZ770',aspect:16/10,offset:0,shMin:-16,shMax:50,noteKey:'prof.rz.note',
     lenses:[
-      {name:'Standard 1,70–2,40:1',min:1.70,max:2.40},
-      {name:'ET-DLE085 · 0,80–1,00:1',min:0.80,max:1.00},
-      {name:'ET-DLE105 · 0,98–1,32:1',min:0.98,max:1.32},
-      {name:'ET-DLE150 · 1,30–1,90:1',min:1.30,max:1.90},
-      {name:'ET-DLE170 · 1,71–2,40:1',min:1.71,max:2.40},
-      {name:'ET-DLE250 · 2,30–3,60:1',min:2.30,max:3.60},
-      {name:'ET-DLE350 · 3,60–5,40:1',min:3.60,max:5.40},
-      {name:'ET-DLE450 · 5,40–8,60:1',min:5.40,max:8.60}]},
-  eh461:{name:'Optoma EH461',aspect:16/9,offset:65,shMin:0,shMax:0,
-    note:'Pas de lens shift. Offset natif fixe : le centre de l\'image est à 65 % de sa hauteur de l\'axe de l\'objectif.',
-    lenses:[{name:'Zoom intégré 1,22–1,46:1',min:1.22,max:1.46}]},
-  custom:{name:'Autre modèle (manuel)',custom:true,lenses:[{name:'Valeurs saisies',min:1.5,max:2}]}
+      {std:true,min:1.70,max:2.40},
+      {code:'ET-DLE085',min:0.80,max:1.00},
+      {code:'ET-DLE105',min:0.98,max:1.32},
+      {code:'ET-DLE150',min:1.30,max:1.90},
+      {code:'ET-DLE170',min:1.71,max:2.40},
+      {code:'ET-DLE250',min:2.30,max:3.60},
+      {code:'ET-DLE350',min:3.60,max:5.40},
+      {code:'ET-DLE450',min:5.40,max:8.60}]},
+  eh461:{name:'Optoma EH461',aspect:16/9,offset:65,shMin:0,shMax:0,noteKey:'prof.eh.note',
+    lenses:[{builtin:true,min:1.22,max:1.46}]},
+  custom:{nameKey:'model.custom',custom:true,lenses:[{manual:true,min:1.5,max:2}]}
 };
+const modelName=p=>p.nameKey?tx(p.nameKey):p.name;
+function lensName(l){const r=`${fmt(l.min,2)}–${fmt(l.max,2)}:1`;
+  return l.code?`${l.code} · ${r}`:l.std?`${tx('lens.std')} ${r}`:l.builtin?`${tx('lens.builtin')} ${r}`:tx('lens.manual');}
 const S={mount:'inv',ref:'zero',href:'under',tab:'prep'};
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
 /* ---------- UI ---------- */
 const modelSel=$('model'),lensSel=$('lens');
-for(const [k,p] of Object.entries(PROFILES)){const o=document.createElement('option');o.value=k;o.textContent=p.name;modelSel.appendChild(o);}
-function fillLenses(){const p=PROFILES[modelSel.value];lensSel.innerHTML='';
-  p.lenses.forEach((l,i)=>{const o=document.createElement('option');o.value=i;o.textContent=l.name;lensSel.appendChild(o);});
+function fillModels(){const v=modelSel.value;modelSel.innerHTML='';
+  for(const [k,p] of Object.entries(PROFILES)){const o=document.createElement('option');o.value=k;o.textContent=modelName(p);modelSel.appendChild(o);}
+  if(v&&PROFILES[v])modelSel.value=v;}
+function fillLenses(keep){const p=PROFILES[modelSel.value],v=lensSel.value;lensSel.innerHTML='';
+  p.lenses.forEach((l,i)=>{const o=document.createElement('option');o.value=i;o.textContent=lensName(l);lensSel.appendChild(o);});
+  if(keep&&v!==''&&lensSel.options[v])lensSel.value=v;
   $('custBox').hidden=!p.custom;}
+fillModels();
 function syncSeg(id,key){$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S[key]?'true':'false'));}
 function segInit(id,key){$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S[key]=b.dataset.v;syncSeg(id,key);update();});}
 segInit('mountSeg','mount');segInit('refSeg','ref');segInit('hrefSeg','href');
@@ -478,8 +530,8 @@ modelSel.addEventListener('change',()=>{fillLenses();update();});
 lensSel.addEventListener('change',update);
 FIELDS.forEach(f=>{$(f).addEventListener('input',update);$(f).addEventListener('change',update);});
 function profile(){const k=modelSel.value,p=PROFILES[k];
-  if(p.custom)return{name:p.name,aspect:+$('cAsp').value,offset:+$('cOff').value||0,shMin:+$('cShMin').value||0,shMax:+$('cShMax').value||0,lens:{min:+$('cTrMin').value,max:+$('cTrMax').value},note:''};
-  return{...p,lens:p.lenses[+lensSel.value]||p.lenses[0]};}
+  if(p.custom)return{name:modelName(p),aspect:+$('cAsp').value,offset:+$('cOff').value||0,shMin:+$('cShMin').value||0,shMax:+$('cShMax').value||0,lens:{min:+$('cTrMin').value,max:+$('cTrMax').value},note:''};
+  return{...p,name:modelName(p),note:p.noteKey?tx(p.noteKey):'',lens:p.lenses[+lensSel.value]||p.lenses[0]};}
 
 /* ---------- Géométrie ----------
    x latéral, y vertical, z vers l'écran (plan z = D). Tilt θ (+ = vers le haut).
@@ -545,7 +597,7 @@ function common(){
 }
 const H=(C,v)=>v-C.delta;   // axe de l'objectif -> hauteur dans la référence choisie
 const LENS=(C,v)=>v+C.delta; // hauteur saisie -> axe de l'objectif
-const REFNAME={lens:'axe objectif',under:'dessous projecteur',truss:'bas du truss'};
+const refName=h=>tx('ref.'+h);
 
 /* ---------- Préparer : zone (calculée quand les réglages changent) ---------- */
 let Zc=null,ZcKey='';
@@ -645,45 +697,45 @@ function inZone(C,w){
 })();
 
 function renderPrep(C,keepScale){
-  const{T,p}=C,inv=C.s<0,unit=REFNAME[C.href];
+  const{T,p}=C,inv=C.s<0,unit=refName(C.href);
   $('pDist').innerHTML=C.Dmax-C.Dmin>0.05?`${fmt(C.Dmin,1)}–${fmt(C.Dmax,1)}<small> m</small>`:`${fmt(C.Dmin,2)}<small> m</small>`;
-  $('pSentence').textContent=`Contenu ${fmtName(T.ca)} de ${fmt(T.Wcont,2)} × ${fmt(T.Hcont,2)} m pour couvrir l'écran de ${fmt(T.sw,2)} × ${fmt(T.sh,2)} m, du zoom grand-angle au zoom télé.`;
-  $('pZoomHead').textContent=`throw ${fmt(p.lens.min,2)}–${fmt(p.lens.max,2)}:1`;
+  $('pSentence').textContent=tx('p.sentence',{f:fmtName(T.ca),w:fmt(T.Wcont,2),h:fmt(T.Hcont,2),sw:fmt(T.sw,2),sh:fmt(T.sh,2)});
+  $('pZoomHead').textContent=tx('p.zoomhead',{a:fmt(p.lens.min,2),b:fmt(p.lens.max,2)});
   const msgs=$('pMsgs');msgs.innerHTML='';
-  if(inv&&C.Hp0<T.top&&!(C.band&&C.band[1]>=T.top))msgs.innerHTML+=`<div class="alert warn"><span>Sans tilt, l'objectif serait sous le haut de l'écran : en suspendu il faudra incliner.</span></div>`;
+  if(inv&&C.Hp0<T.top&&!(C.band&&C.band[1]>=T.top))msgs.innerHTML+=`<div class="alert warn"><span>${tx('p.warnTilt')}</span></div>`;
   drawZone(C,keepScale);
   // position choisie
   const D=+$('dist').value,Hp=LENS(C,+$('trim').value);
   const rows=[],ht=[];
   if(D>0&&Number.isFinite(Hp)){
-    const f=cover(T,C.asp,C.o,s_(C),Hp,D);
+    const f=cover(T,C.asp,C.o,C.s,Hp,D);
     if(f){
       const thD=f.th*DEG,ks=f.t.ks,inZ=f.TR>=p.lens.min-1e-6&&f.TR<=p.lens.max+1e-6;
       const ksCls=ks<=C.K2?'okk':ks<=C.K?'warn':'bad';
-      rows.push(['',`Distance`,`${fmt(D,2)} m`],['',`Hauteur ${unit}`,`${fmt(H(C,Hp),2)} m`],
-        ['',`Tilt`,`${sgn(thD)}°`],[ksCls,`Keystone`,`${fmt(ks)} %<small>${ks<=C.K2?'confortable':ks<=C.K?'acceptable':'au-delà du max'}</small>`],
-        [inZ?'okk':f.TR<p.lens.min?'bad':'warn',`Zoom nécessaire`,`${fmt(f.TR,2)}:1<small>${inZ?'dans la plage':f.TR<p.lens.min?'trop près : l\'écran ne sera pas couvert':'trop loin : image plus grande que nécessaire'}</small>`]);
-      $('ptHead').textContent=inZ&&ks<=C.K?'faisable':'hors limites';
-    }else{rows.push(['bad','Position','géométrie impossible']);$('ptHead').textContent='';}
+      rows.push(['',tx('row.dist'),`${fmt(D,2)} m`],['',tx('row.height',{unit}),`${fmt(H(C,Hp),2)} m`],
+        ['',tx('row.tilt'),`${sgn(thD)}°`],
+        [ksCls,tx('row.ks'),`${fmt(ks)}${PCT()}<small>${tx(ks<=C.K2?'ks.comf':ks<=C.K?'ks.ok':'ks.over')}</small>`],
+        [inZ?'okk':f.TR<p.lens.min?'bad':'warn',tx('row.zoom'),`${fmt(f.TR,2)}:1<small>${tx(inZ?'z.in':f.TR<p.lens.min?'z.near':'z.far')}</small>`]);
+      $('ptHead').textContent=tx(inZ&&ks<=C.K?'pt.ok':'pt.no');
+    }else{rows.push(['bad',tx('row.pos'),tx('row.impossible')]);$('ptHead').textContent='';}
     // hauteurs à cette distance
     const lim=(K,d)=>limit(T,C.asp,C.o,C.s,D,C.Hp0,K,d);
-    const d=C.dir,word=d>0?'max':'min';
-    const fmtH=r=>(r.capped&&d>0?'> ':'')+(r.H<=0.01?'sol':fmt(H(C,r.H),2)+' m');
-    ht.push(['grp','Sans tilt','']);
-    ht.push(['sub','Idéale',`${fmt(H(C,C.Hp0),2)} m<small>shift ${C.hasShift?sgn(C.shRef,0)+' %':'—'}</small>`]);
-    if(C.band){const e=d>0?C.band[1]:C.band[0];ht.push(['sub',`${d>0?'Max':'Min'}, shift en butée`,`${fmt(H(C,e),2)} m<small>shift ${sgn(p.shMax,0)} %</small>`]);}
-    ht.push(['grp','Avec tilt, shift en réserve','']);
+    const d=C.dir,word=tx(d>0?'dir.max':'dir.min');
+    const fmtH=r=>(r.capped&&d>0?'> ':'')+(r.H<=0.01?tx('floor'):fmt(H(C,r.H),2)+' m');
+    ht.push(['grp',tx('ht.notilt'),'']);
+    ht.push(['sub',tx('ht.ideal'),`${fmt(H(C,C.Hp0),2)} m<small>shift ${C.hasShift?sgn(C.shRef,0)+PCT():'—'}</small>`]);
+    if(C.band){const e=d>0?C.band[1]:C.band[0];ht.push(['sub',tx(d>0?'ht.maxStop':'ht.minStop'),`${fmt(H(C,e),2)} m<small>shift ${sgn(p.shMax,0)}${PCT()}</small>`]);}
+    ht.push(['grp',tx('ht.tilt'),'']);
     const rc=lim(C.K2,d),rk=lim(C.K,d);
     const thOf=Hh=>{const f=cover(T,C.asp,C.o,C.s,Hh,D);return f?sgn(f.th*DEG)+'°':'–';};
-    ht.push(['sub',`Idéale, ${word} (keystone ${fmt(C.K2,0)} %)`,`${fmtH(rc)}<small>tilt ${thOf(rc.H)}</small>`]);
-    ht.push(['sub',`Limite, ${word} (keystone ${fmt(C.K,0)} %)`,`${fmtH(rk)}<small>tilt ${thOf(rk.H)}</small>`]);
-    $('htHead').textContent=`à ${fmt(D,2)} m · ${unit}`;
+    ht.push(['sub',tx('ht.idealDir',{dir:word,k:fmt(C.K2,0)}),`${fmtH(rc)}<small>tilt ${thOf(rc.H)}</small>`]);
+    ht.push(['sub',tx('ht.limitDir',{dir:word,k:fmt(C.K,0)}),`${fmtH(rk)}<small>tilt ${thOf(rk.H)}</small>`]);
+    $('htHead').textContent=tx('ht.head',{d:fmt(D,2),unit});
   }
   $('ptRows').innerHTML=rows.map(([c,a,b])=>`<li class="${c}"><span>${a}</span><b>${b}</b></li>`).join('');
   $('htRows').innerHTML=ht.map(([c,a,b])=>`<li class="${c}"><span>${a}</span><b>${b}</b></li>`).join('');
-  $('htNote').textContent=`Sans tilt, la hauteur ne dépend pas de la distance : la position verticale de l'image ne dépend que de l'offset et du shift. Avec tilt, plus on est loin, plus on peut ${inv?'monter':'descendre'} pour le même keystone.`;
+  $('htNote').textContent=tx('ht.note',{verb:tx(inv?'ht.up':'ht.down')});
 }
-const s_=C=>C.s;
 
 const T_=(x,y,txt,anc='start',size=10)=>`<text x="${x}" y="${y}" fill="${css('--muted')}" font-family="DM Mono, monospace" font-size="${size}" text-anchor="${anc}">${txt}</text>`;
 function beamDefs(id){return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${css('--hot')}" stop-opacity=".55"/><stop offset="1" stop-color="${css('--mag')}" stop-opacity=".35"/></linearGradient></defs>`;}
@@ -705,42 +757,43 @@ function solve(C){
   return{...C,trim,D,Hp,TR,TRb,th,phi,tolLo:Math.min(ta,tb)-th,tolHi:Math.max(ta,tb)-th,
     reach:[yAt(vmin),yAt(vmax)].sort((a,b)=>a-b),best,wide,tele,panel,exact:f.t,Wi:T.sw};
 }
-function fmtName(a){const n={1.7778:'16:9',1.6:'16:10',1.3333:'4:3',2:'2:1',2.39:'2,39:1',1:'1:1'};for(const k in n)if(Math.abs(a-k)<0.01)return n[k];return fmt(a,2)+':1';}
+const FMTN={'1.7778':'16:9','1.6':'16:10','1.3333':'4:3','2':'2:1','1':'1:1'};
+function fmtName(a){for(const k in FMTN)if(Math.abs(a-k)<0.01)return FMTN[k];return fmt(a,2)+':1';}
 function renderCalc(C){
   R=C?solve(C):null;
   const msgs=$('rMsgs');msgs.innerHTML='';
   const addMsg=(cls,html)=>{const d=document.createElement('div');d.className='alert '+cls;d.innerHTML='<span>'+html+'</span>';msgs.appendChild(d);};
-  if(!R){$('rTarget').textContent='–';$('rSentence').textContent='';$('rTolHead').textContent='';$('rChips').innerHTML='';$('rKv').innerHTML='';$('rCover').innerHTML='';$('rCoverNote').textContent='';$('sideView').innerHTML='';$('frontView').innerHTML='';addMsg('bad','Données incomplètes ou géométrie impossible.');return;}
+  if(!R){$('rTarget').textContent='–';$('rSentence').textContent='';$('rTolHead').textContent='';$('rChips').innerHTML='';$('rKv').innerHTML='';$('rCover').innerHTML='';$('rCoverNote').textContent='';$('sideView').innerHTML='';$('frontView').innerHTML='';addMsg('bad',tx('c.incomplete'));return;}
   const thD=R.th*DEG,{T,p}=R;
   $('rTarget').textContent=sgn(thD)+'°';
-  $('rSentence').textContent=`Incliner de ${fmt(Math.abs(thD))}° ${thD<0?'vers le bas':'vers le haut'}${R.s<0?', montage inversé':''}.`;
-  $('rTolHead').textContent=R.hasShift?`· réserve shift ${sgn(R.tolLo*DEG)}° / ${sgn(R.tolHi*DEG)}°`:'· pas de shift';
-  const zc=R.TR<p.lens.min-1e-6?['bad','zoom trop court']:R.TR>p.lens.max+1e-6?['warn','zoom en butée télé']:['ok',`zoom ${fmt(R.TR,2)}:1`];
+  $('rSentence').textContent=tx('c.sentence',{v:fmt(Math.abs(thD)),dir:tx(thD<0?'c.down':'c.up'),inv:R.s<0?tx('c.inv'):''});
+  $('rTolHead').textContent=R.hasShift?tx('c.res',{a:sgn(R.tolLo*DEG),b:sgn(R.tolHi*DEG)}):tx('c.noshift');
+  const zc=R.TR<p.lens.min-1e-6?['bad',tx('chip.short')]:R.TR>p.lens.max+1e-6?['warn',tx('chip.tele')]:['ok',tx('chip.zoom',{v:fmt(R.TR,2)})];
   const kc=R.exact.ks<=R.K2?'ok':R.exact.ks<=R.K?'warn':'bad';
-  $('rChips').innerHTML=`<span class="chip ${zc[0]}">${zc[1]}</span><span class="chip ${kc}">keystone ${fmt(R.exact.ks)} %</span>`;
-  if(R.TR<p.lens.min-1e-6)addMsg('bad',`Trop près : pour couvrir l'écran il faudrait un throw de ${fmt(R.TR,2)}:1, l'objectif descend à ${fmt(p.lens.min,2)}:1. Même au zoom grand-angle, l'écran ne sera pas couvert.`);
-  else if(R.TR>p.lens.max+1e-6)addMsg('warn',`Loin : même au zoom télé (${fmt(p.lens.max,2)}:1) l'image déborde plus que nécessaire. L'écran est couvert, mais avec moins de pixels utiles.`);
-  if(R.exact.ks>R.K)addMsg('warn',`Keystone de ${fmt(R.exact.ks)} %, au-delà des ${fmt(R.K,0)} % acceptés. Vois l'onglet Préparer pour une meilleure hauteur.`);
-  if(!R.hasShift)addMsg('warn','Pas de shift, aucune réserve : chaque 0,1° déplace l\'image de ≈ '+fmt(R.D*Math.tan(0.1/DEG)/Math.cos(R.phi)**2*100,1)+' cm.');
-  if(R.hasShift){$('refHint').textContent=S.ref==='mid'
-      ?`Règle le shift vertical à ${sgn(R.shRef,0)} % (milieu de course) avant de lever : marge identique dans les deux sens.`
-      :'Shift vertical au neutre (position home) avant de lever. Marge asymétrique : +50 % d\'un côté, −16 % de l\'autre.';}
-  const kv=[['Axe de l\'objectif',`${fmt(R.Hp,2)} m`],['Dalle entière, largeur haut / bas',`${fmt(R.panel.wTop,2)} / ${fmt(R.panel.wBot,2)} m`],['Dénivelé vers le centre',`${sgn(T.Hc-R.Hp,2)} m`],
-    ['Throw pour couvrir',`${fmt(R.TR,2)}:1`],['Plage objectif',`${fmt(p.lens.min,2)}–${fmt(p.lens.max,2)}:1`],['Keystone',`${fmt(R.exact.ks)} %`]];
-  if(R.hasShift)kv.push(['Le shift couvre',`${fmt(R.reach[0],2)} → ${fmt(R.reach[1],2)} m`]);
+  $('rChips').innerHTML=`<span class="chip ${zc[0]}">${zc[1]}</span><span class="chip ${kc}">${tx('chip.ks',{v:fmt(R.exact.ks)})}</span>`;
+  if(R.TR<p.lens.min-1e-6)addMsg('bad',tx('c.near',{tr:fmt(R.TR,2),min:fmt(p.lens.min,2)}));
+  else if(R.TR>p.lens.max+1e-6)addMsg('warn',tx('c.far',{max:fmt(p.lens.max,2)}));
+  if(R.exact.ks>R.K)addMsg('warn',tx('c.ksover',{v:fmt(R.exact.ks),k:fmt(R.K,0)}));
+  if(!R.hasShift)addMsg('warn',tx('c.noshiftwarn',{d:fmt(0.1,1),cm:fmt(R.D*Math.tan(0.1/DEG)/Math.cos(R.phi)**2*100,1)}));
+  if(R.hasShift)$('refHint').textContent=S.ref==='mid'
+      ?tx('ref.mid',{v:sgn(R.shRef,0)})
+      :(p.shMax===-p.shMin?tx('ref.zeroSym',{v:fmt(p.shMax,0)}):tx('ref.zero',{hi:sgn(p.shMax,0),lo:sgn(p.shMin,0)}));
+  const kv=[[tx('kv.axis'),`${fmt(R.Hp,2)} m`],[tx('kv.panel'),`${fmt(R.panel.wTop,2)} / ${fmt(R.panel.wBot,2)} m`],[tx('kv.drop'),`${sgn(T.Hc-R.Hp,2)} m`],
+    [tx('kv.tr'),`${fmt(R.TR,2)}:1`],[tx('kv.range'),`${fmt(p.lens.min,2)}–${fmt(p.lens.max,2)}:1`],[tx('kv.ks'),`${fmt(R.exact.ks)}${PCT()}`]];
+  if(R.hasShift)kv.push([tx('kv.reach'),`${fmt(R.reach[0],2)} → ${fmt(R.reach[1],2)} m`]);
   $('rKv').innerHTML=kv.map(([a,b])=>`<li><span>${a}</span><b>${b}</b></li>`).join('');
   // couverture de l'écran par l'image au meilleur zoom
-  const b=R.best,cm=v=>Math.abs(v)<0.01?'≈ 0':(v>0?`déborde ${fmt(v*100,0)} cm`:`manque ${fmt(-v*100,0)} cm`);
-  const cov=[['Haut',b.yTop-T.top],['Bas',T.sb-b.yBot],['Côtés, en haut de l\'écran',(widthAt(b,T.top)-T.sw)/2],['Côtés, en bas de l\'écran',(widthAt(b,T.sb)-T.sw)/2]];
+  const b=R.best,cm=v=>Math.abs(v)<0.01?'≈ 0':tx(v>0?'cov.over':'cov.under',{v:fmt(Math.abs(v)*100,0)});
+  const cov=[[tx('cov.top'),b.yTop-T.top],[tx('cov.bot'),T.sb-b.yBot],[tx('cov.sideTop'),(widthAt(b,T.top)-T.sw)/2],[tx('cov.sideBot'),(widthAt(b,T.sb)-T.sw)/2]];
   $('rCover').innerHTML=cov.map(([a,v])=>`<li class="${v<-0.01?'bad':''}"><span>${a}</span><b>${cm(v)}</b></li>`).join('');
-  let note=R.TRb!==R.TR?`Zoom en butée ${R.TR<p.lens.min?'grand-angle':'télé'}. `:`Zoom à ${fmt(R.TR,2)}:1 : l'image touche juste l'écran sur son bord le plus serré. `;
+  let note=R.TRb!==R.TR?tx(R.TR<p.lens.min?'n.stopWide':'n.stopTele'):tx('n.fit',{v:fmt(R.TR,2)});
   const scr=T.sw/T.sh,ext=(T.Hcont-T.sh)/2,extW=(T.Wcont-T.sw)/2;
-  if(ext>0.01)note+=`Écran ${fmt(scr,2)}:1 plus large que le contenu ${fmtName(T.ca)} : environ ${fmt(ext*100,0)} cm de contenu en trop en haut et en bas, à masquer. `;
-  else if(extW>0.01)note+=`Écran plus haut que le contenu ${fmtName(T.ca)} : environ ${fmt(extW*100,0)} cm de contenu en trop de chaque côté, à masquer. `;
-  if(T.fy<0.995)note+=`Contenu ${fmtName(T.ca)} sur dalle ${fmtName(R.asp)} : bandes noires en haut et en bas de la dalle. `;
-  else if(T.fx<0.995)note+=`Contenu ${fmtName(T.ca)} sur dalle ${fmtName(R.asp)} : bandes noires sur les côtés de la dalle. `;
-  if(b.ks>0.5)note+='Les débords supplémentaires viennent du keystone.';
-  $('rCoverNote').textContent=note;
+  if(ext>0.01)note+=tx('n.wider',{r:fmt(scr,2),f:fmtName(T.ca),cm:fmt(ext*100,0)});
+  else if(extW>0.01)note+=tx('n.taller',{f:fmtName(T.ca),cm:fmt(extW*100,0)});
+  if(T.fy<0.995)note+=tx('n.lb',{f:fmtName(T.ca),p:fmtName(R.asp)});
+  else if(T.fx<0.995)note+=tx('n.pb',{f:fmtName(T.ca),p:fmtName(R.asp)});
+  if(b.ks>0.5)note+=tx('n.ks');
+  $('rCoverNote').textContent=note.trim();
   drawSide();drawFront();
 }
 function drawSide(){
@@ -764,7 +817,7 @@ function drawSide(){
   g+=`<circle cx="${X(R.D)}" cy="${Y(T.Hc)}" r="4" fill="${css('--bg')}" stroke="${css('--mag')}" stroke-width="2"/>`;
   if(R.s<0&&R.href==='truss')g+=T_(X(0)+6,Y(R.trim+0.3)-4,`truss ${fmt(R.trim,2)} m`);
   g+=T_((X(0)+X(R.D))/2,Y(0)+14,`${fmt(R.D,2)} m`,'middle');
-  g+=T_(X(R.D)-6,Y(T.sb)+12,`bas ${fmt(T.sb,2)}`,'end');
+  g+=T_(X(R.D)-6,Y(T.sb)+12,tx('side.bot',{v:fmt(T.sb,2)}),'end');
   g+=T_(X(0)+8,Y(R.Hp)+(R.th<0?-8:14),`${sgn(R.th*DEG)}°`,'start',11);
   svg.innerHTML=g;
 }
@@ -784,7 +837,7 @@ function drawFront(){
   [R.wide,R.tele].forEach(t=>{g+=`<polygon points="${poly(t)}" fill="none" stroke="${ink}" stroke-width="1" stroke-dasharray="4 4"/>`;});
   g+=`<rect x="${X(-T.sw/2)}" y="${Y(T.top)}" width="${T.sw*k}" height="${T.sh*k}" fill="none" stroke="${ink}" stroke-width="2"/>`;
   g+=`<circle cx="${X(0)}" cy="${Y(T.Hc)}" r="3" fill="${ink}"/>`;
-  g+=T_(W/2,Ht-6,`image haut ${fmt(R.best.wTop,2)} m · bas ${fmt(R.best.wBot,2)} m · keystone ${fmt(R.best.ks)} %`,'middle',11);
+  g+=T_(W/2,Ht-6,tx('front.lbl',{a:fmt(R.best.wTop,2),b:fmt(R.best.wBot,2),k:fmt(R.best.ks)}),'middle',11);
   svg.innerHTML=g;
 }
 
@@ -796,14 +849,14 @@ function update(fromDrag){
   if(S.mount!=='inv'&&S.href==='truss'){S.href='under';syncSeg('hrefSeg','href');}
   $('hrefSeg').querySelector('[data-v="truss"]').hidden=S.mount!=='inv';
   $('boxHang').hidden=S.href!=='truss';
-  $('lblTrim').innerHTML={lens:'Hauteur de l\'axe',under:'Hauteur du dessous',truss:'Hauteur du bas du truss'}[S.href]+' <em>m</em>';
-
+  $('lblTrim').innerHTML=tx('trim.'+S.href)+' <em>m</em>';
   $('lgPanel').hidden=true;
   if(p.shMax===p.shMin)$('refHint').textContent=p.note||'';
   const C=common();
-  if(C){$('centerHint').textContent=`centre à ${fmt(C.T.Hc,2)} m`;
+  if(C){$('centerHint').textContent=tx('center.hint',{v:fmt(C.T.Hc,2)});
     const T=C.T,bands=T.fx<0.995||T.fy<0.995;
-    $('coverHint').textContent=`Contenu ${fmtName(T.ca)} de ${fmt(T.Wcont,2)} × ${fmt(T.Hcont,2)} m pour couvrir l'écran (le surplus se masque)`+(bands?` ; dalle ${fmtName(C.asp)} entière : ${fmt(T.Wc,2)} × ${fmt(T.Hcov,2)} m, avec bandes noires.`:'.');
+    $('coverHint').textContent=tx('cover.hint',{f:fmtName(T.ca),w:fmt(T.Wcont,2),h:fmt(T.Hcont,2)})
+      +(bands?tx('cover.bands',{p:fmtName(C.asp),pw:fmt(T.Wc,2),ph:fmt(T.Hcov,2)}):'.');
     $('lgPanel').hidden=!bands;}
   else{$('centerHint').textContent='';$('coverHint').textContent='';}
   if(C&&S.tab==='prep')renderPrep(C,!!fromDrag&&dragging);
@@ -811,20 +864,59 @@ function update(fromDrag){
   pushTarget();
 }
 
+/* ---------- Défilement ----------
+   Position de repos = bord de la fenêtre 20 px au-dessus du titre : le bandeau décoratif est caché,
+   le titre, les boutons et les onglets restent visibles.
+   • À l'ouverture : tout l'en-tête est visible, puis la page glisse en 3 s jusqu'à cette position.
+   • Au changement d'onglet : si on était plus bas, on revient directement à cette position. */
+const INTRO_HOLD=600,INTRO_MS=3000;
+let intro={raf:0,cancelled:false};
+function restY(){const h=$('appTitle');return Math.max(0,Math.round(h.getBoundingClientRect().top+window.scrollY-20));}
+function stopIntro(){intro.cancelled=true;if(intro.raf){cancelAnimationFrame(intro.raf);intro.raf=0;}}
+function startIntro(){
+  try{history.scrollRestoration='manual';}catch(e){}
+  window.scrollTo(0,0);
+  const reduce=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+  setTimeout(()=>{
+    if(intro.cancelled)return;
+    const y1=restY();if(y1<=0)return;
+    if(reduce){window.scrollTo(0,y1);return;}
+    const t0=performance.now(),ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+    const step=now=>{if(intro.cancelled)return;
+      const k=Math.min(1,(now-t0)/INTRO_MS);window.scrollTo(0,Math.round(y1*ease(k)));
+      intro.raf=k<1?requestAnimationFrame(step):0;};
+    intro.raf=requestAnimationFrame(step);
+  },INTRO_HOLD);
+  // le moindre geste de l'utilisateur interrompt l'animation
+  ['wheel','touchstart','pointerdown','keydown'].forEach(ev=>window.addEventListener(ev,stopIntro,{passive:true}));
+}
+
 /* ---------- Onglets ---------- */
-function tab(which){
+function tab(which,opts){
   S.tab=which;
   if(which==='mes')start(false);
   ['prep','calc','mes'].forEach(t=>{$('tab-'+t).setAttribute('aria-selected',t===which);$('pane-'+t).hidden=t!==which;});
   $('shared').hidden=which!=='prep';
   update();
+  if(!opts||opts.scroll!==false){stopIntro();const y=restY();if(window.scrollY>y+1)window.scrollTo(0,y);}
 }
 ['prep','calc','mes'].forEach(t=>$('tab-'+t).addEventListener('click',()=>tab(t)));
 
+/* ---------- Changement de langue ---------- */
+$('langBtn').addEventListener('click',()=>{
+  lang=LANGS[(LANGS.indexOf(lang)+1)%LANGS.length];
+  try{localStorage.setItem('vp-lang',lang);}catch(e){}
+  applyStatic();applyTheme(theme);fillModels();fillLenses(true);
+  flipLabel();calState(calSt);calInfo();if(sensorMsg)setSensor(sensorMsg[0],sensorMsg[1]);
+  ZV=null;update();
+});
+
 /* ---------- Mesurer ---------- */
 const M={got:false,pitch:null,roll:null,flip:store.get('vp-flip')||false,bias:store.get('vp-bias')||{p:0,r:0},calA:null};
+let calSt='a',sensorMsg=null;
+function setSensor(k,v){sensorMsg=[k,v];$('mSensor').textContent=tx(k,v);}
 function pushTarget(){$('mTarget').textContent=R?sgn(R.th*DEG)+'°':'–';drawGauge();drawRollGauge();drawScope();refreshMeter();}
-function calInfo(){$('calInfo').textContent=`Biais mémorisé : tilt ${sgn(M.bias.p,2)}°, roll ${sgn(M.bias.r,2)}°.`;}
+function calInfo(){$('calInfo').textContent=tx('cal.info',{p:sgn(M.bias.p,2),r:sgn(M.bias.r,2)});}
 calInfo();
 function current(){if(M.pitch==null)return null;let p=M.pitch-M.bias.p,r=M.roll-M.bias.r;return{p,r};}
 function onOri(e){if(e.beta==null||e.gamma==null)return;if(!M.got){M.got=true;sensorsReady();}let b=e.beta,g=e.gamma;if(M.flip){b=-b;g=-g;}
@@ -837,24 +929,23 @@ function refreshMeter(){
   const rc=Math.abs(c.r)<=TOL?'st-ok':Math.abs(c.r)<=2*TOL?'st-warn':'st-bad';
   $('mRoll').textContent=sgn(c.r,2)+'°';$('mRoll').className=rc;
   const ro=$('mRollOrder');ro.className='order '+rc;
-  ro.textContent=Math.abs(c.r)<=TOL?'De niveau':(c.r>0?'Remonter le côté droit ':'Remonter le côté gauche ')+fmt(Math.abs(c.r),1)+'°';
+  ro.textContent=Math.abs(c.r)<=TOL?tx('m.level'):tx(c.r>0?'m.raiseR':'m.raiseL',{v:fmt(Math.abs(c.r),1)});
   const Wimg=R?R.Wi:(+$('sw').value||0);
   if(Wimg>0){const dcm=Wimg*Math.tan(Math.abs(c.r)/DEG)*100;
-    $('mRollCm').textContent=Math.abs(c.r)<0.05?'Image droite.':`Un bord de l'image sera ≈ ${fmt(dcm,0)} cm plus bas que l'autre (${c.r>0?'côté droit':'côté gauche'}, vu depuis le projecteur).`;}
+    $('mRollCm').textContent=Math.abs(c.r)<0.05?tx('m.straight'):tx('m.edge',{cm:fmt(dcm,0),side:tx(c.r>0?'m.sideR':'m.sideL')});}
   drawRollNeedle(c.r);
-  if(!R){ord.textContent='Pas de cible';ord.className='order st-idle';moveDot(0,c.r,'st-idle');return;}
+  if(!R){ord.textContent=tx('m.notarget');ord.className='order st-idle';moveDot(0,c.r,'st-idle');return;}
   const t=R.th*DEG,d=c.p-t,tlo=R.tolLo*DEG,thi=R.tolHi*DEG;
   $('mDelta').textContent=sgn(d,2)+'°';
   let cls,txt;
-  if(Math.abs(d)<=TOL){cls='st-ok';txt='Dans la cible';}
+  if(Math.abs(d)<=TOL){cls='st-ok';txt=tx('m.on');}
   else{const inTol=R.hasShift&&d>=tlo&&d<=thi;cls=inTol?'st-warn':'st-bad';
-    txt=(d>0?'Viser plus bas ':'Viser plus haut ')+fmt(Math.abs(d),1)+'°'+(inTol?' · rattrapable au shift':'');}
+    txt=tx(d>0?'m.lower':'m.higher',{v:fmt(Math.abs(d),1)})+(inTol?tx('m.catch'):'');}
   read.className='reading '+cls;ord.className='order '+cls;ord.textContent=txt;$('mDelta').className=cls;
   const cm=R.D*(Math.tan(R.th+d/DEG)-Math.tan(R.th))*100;
   $('mCm').textContent=`${sgn(cm,0)} cm`;$('mCm').className=cls;
   drawNeedle(d);moveDot(d,c.r,Math.abs(d)<=TOL&&Math.abs(c.r)<=TOL?'st-ok':cls==='st-ok'?rc:cls);
 }
-const TOL=0.5; // tolérance « correct », en degrés (tilt et roll)
 // viseur : bord du cercle = 20°, échelle resserrée au centre pour garder de la finesse près de la cible
 const SC=v=>{const a=6,m=Math.min(Math.abs(v),20);return Math.sign(v)*140*(1-Math.exp(-m/a))/(1-Math.exp(-20/a));};
 function drawScope(){
@@ -865,9 +956,9 @@ function drawScope(){
     g+=`<text x="${150+SC(v)*0.7071+4}" y="${150-SC(v)*0.7071-4}" fill="${mut}" font-family="DM Mono, monospace" font-size="10">${fmt(v,0)}°</text>`;});
   g+=`<circle cx="150" cy="150" r="${SC(TOL)}" fill="${css('--ok')}" fill-opacity=".22" stroke="${css('--ok')}" stroke-width="1.2"/>`;
   g+=`<line x1="10" y1="150" x2="290" y2="150" stroke="${ink}" stroke-width=".8"/><line x1="150" y1="10" x2="150" y2="290" stroke="${ink}" stroke-width=".8"/>`;
-  g+=`<text x="150" y="28" text-anchor="middle" fill="${mut}" font-family="Jost, sans-serif" font-size="11" letter-spacing="1">VISE TROP HAUT</text>`;
-  g+=`<text x="150" y="282" text-anchor="middle" fill="${mut}" font-family="Jost, sans-serif" font-size="11" letter-spacing="1">VISE TROP BAS</text>`;
-  g+=`<text x="22" y="146" fill="${mut}" font-family="Jost, sans-serif" font-size="11">G bas</text><text x="278" y="146" text-anchor="end" fill="${mut}" font-family="Jost, sans-serif" font-size="11">D bas</text>`;
+  g+=`<text x="150" y="28" text-anchor="middle" fill="${mut}" font-family="Jost, sans-serif" font-size="11" letter-spacing="1">${tx('scope.high')}</text>`;
+  g+=`<text x="150" y="282" text-anchor="middle" fill="${mut}" font-family="Jost, sans-serif" font-size="11" letter-spacing="1">${tx('scope.low')}</text>`;
+  g+=`<text x="22" y="146" fill="${mut}" font-family="Jost, sans-serif" font-size="11">${tx('scope.L')}</text><text x="278" y="146" text-anchor="end" fill="${mut}" font-family="Jost, sans-serif" font-size="11">${tx('scope.R')}</text>`;
   g+=`<g id="dot" transform="translate(150,150)"><circle r="17" fill="url(#bsc)" stroke="${ink}" stroke-width="1.5"/><circle r="2.5" fill="${ink}"/></g>`;
   $('scope').innerHTML=g;
 }
@@ -891,7 +982,7 @@ function drawGauge(){
   const svg=$('gauge'),W=340,L=14,Rr=W-14,ink=css('--ink'),mut=css('--muted');
   let g=gaugeBase(30,16,R&&R.hasShift?clamp(R.tolLo*DEG,-20,20):null,R&&R.hasShift?clamp(R.tolHi*DEG,-20,20):null);
   g+=`<g id="needle"><polygon points="0,16 -6,5 6,5" fill="${ink}"/><line x1="0" y1="16" x2="0" y2="40" stroke="${ink}" stroke-width="2"/></g>`;
-  g+=`<text x="${L}" y="72" fill="${mut}" font-family="Jost, sans-serif" font-size="11">vise trop bas</text><text x="${Rr}" y="72" fill="${mut}" font-family="Jost, sans-serif" font-size="11" text-anchor="end">vise trop haut</text>`;
+  g+=`<text x="${L}" y="72" fill="${mut}" font-family="Jost, sans-serif" font-size="11">${tx('g.low')}</text><text x="${Rr}" y="72" fill="${mut}" font-family="Jost, sans-serif" font-size="11" text-anchor="end">${tx('g.high')}</text>`;
   svg.innerHTML=g;
 }
 function drawNeedle(d){const n=document.getElementById('needle');if(!n)return;n.setAttribute('transform',`translate(${GX(d,14,326)},0)`);}
@@ -899,7 +990,7 @@ function drawRollGauge(){
   const svg=$('rgauge'),W=340,L=14,Rr=W-14,ink=css('--ink'),mut=css('--muted');
   let g=gaugeBase(24,16,-2*TOL,2*TOL);
   g+=`<g id="rneedle"><polygon points="0,12 -6,1 6,1" fill="${ink}"/><line x1="0" y1="12" x2="0" y2="34" stroke="${ink}" stroke-width="2"/></g>`;
-  g+=`<text x="${L}" y="64" fill="${mut}" font-family="Jost, sans-serif" font-size="11">gauche plus bas</text><text x="${Rr}" y="64" fill="${mut}" font-family="Jost, sans-serif" font-size="11" text-anchor="end">droite plus bas</text>`;
+  g+=`<text x="${L}" y="64" fill="${mut}" font-family="Jost, sans-serif" font-size="11">${tx('rg.L')}</text><text x="${Rr}" y="64" fill="${mut}" font-family="Jost, sans-serif" font-size="11" text-anchor="end">${tx('rg.R')}</text>`;
   svg.innerHTML=g;
 }
 function drawRollNeedle(r){const n=document.getElementById('rneedle');if(!n)return;n.setAttribute('transform',`translate(${GX(r,14,326)},0)`);}
@@ -911,39 +1002,38 @@ let wake=null,listening=false;
 const needsGesture=()=>typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function';
 function sensorsReady(){
   $('startBox').hidden=true;calState(M.calA?'b':'a');
-  $('mSensor').textContent='Capteurs actifs · écran maintenu allumé si possible.';
+  setSensor('sens.on');
 }
 async function start(fromUser){
-  if(typeof window.DeviceOrientationEvent==='undefined'){$('mSensor').textContent='Ce navigateur ne fournit pas l\'orientation de l\'appareil.';return;}
+  if(typeof window.DeviceOrientationEvent==='undefined'){setSensor('sens.none');return;}
   if(needsGesture()){
     if(fromUser!==true)return;
-    try{const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted'){$('mSensor').textContent='Accès aux capteurs refusé.';return;}}
-    catch(e){$('mSensor').textContent='Accès aux capteurs refusé.';return;}
+    try{const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted'){setSensor('sens.denied');return;}}
+    catch(e){setSensor('sens.denied');return;}
   }
   if(!listening){window.addEventListener('deviceorientation',onOri);listening=true;if(!raf)loop();}
   try{if(navigator.wakeLock&&!wake)wake=await navigator.wakeLock.request('screen');}catch(e){}
   if(M.got)return;
-  $('mSensor').textContent='En attente des capteurs…';
-  setTimeout(()=>{if(!M.got)$('mSensor').textContent=fromUser===true
-    ?'Aucune donnée capteur. Ouvre l\'app depuis son adresse https (GitHub Pages) dans Chrome : les fichiers locaux et la vue artifact bloquent les capteurs.'
-    :'Touche « Démarrer les capteurs ».';},1500);
+  setSensor('sens.wait');
+  setTimeout(()=>{if(!M.got)setSensor(fromUser===true?'sens.nodata':'sens.tap');},1500);
 }
 $('bStart').addEventListener('click',()=>start(true));
 /* Calibration en 3 états : a (poser, mesurer A) -> b (demi-tour, mesurer B) -> done */
 function calState(st){
+  calSt=st;
   $('calFig').className='calfig st-'+st;
-  $('calStep').textContent={a:'Étape 1 · position A',b:'Étape 2 · demi-tour, position B',done:'Calibré'}[st];
+  $('calStep').textContent=tx('cal.step.'+st);
   $('bCalA').disabled=!M.got||st==='b';
   $('bCalB').disabled=!M.got||st!=='b';
-  $('bCalA').textContent=st==='done'?'Recommencer · mesure A':'1 · Mesure A';
+  $('bCalA').textContent=tx(st==='done'?'cal.redo':'cal.btnA');
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&listening){wake=null;start(false);}});
-const flipLabel=()=>{$('bFlip').textContent=M.flip?'Sens inversé · rétablir':'Inverser le sens';};
+const flipLabel=()=>{$('bFlip').textContent=tx(M.flip?'flip.on':'flip.normal');};
 $('bFlip').addEventListener('click',()=>{M.flip=!M.flip;store.set('vp-flip',M.flip);M.pitch=null;M.roll=null;flipLabel();});flipLabel();
-$('bCalA').addEventListener('click',()=>{if(M.pitch==null)return;M.calA={p:M.pitch,r:M.roll};calState('b');$('calInfo').textContent=`A = ${sgn(M.pitch,2)}° / ${sgn(M.roll,2)}°. Fais pivoter le GSM d'un demi-tour sur place, écran vers le haut, attends 2 s, puis Mesure B.`;});
+$('bCalA').addEventListener('click',()=>{if(M.pitch==null)return;M.calA={p:M.pitch,r:M.roll};calState('b');$('calInfo').textContent=tx('cal.afterA',{p:sgn(M.pitch,2),r:sgn(M.roll,2)});});
 $('bCalB').addEventListener('click',()=>{if(!M.calA||M.pitch==null)return;
   M.bias={p:(M.calA.p+M.pitch)/2,r:(M.calA.r+M.roll)/2};store.set('vp-bias',M.bias);
-  const surf=(M.calA.p-M.pitch)/2;M.calA=null;calState('done');calInfo();$('calInfo').textContent+=` Pente de la surface : ${sgn(surf,2)}°.`;});
+  const surf=(M.calA.p-M.pitch)/2;M.calA=null;calState('done');calInfo();$('calInfo').textContent+=tx('cal.slope',{s:sgn(surf,2)});});
 
 function redrawAll(){paintMotif();ZV=null;update();}
 try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawAll);}catch(e){}
@@ -951,8 +1041,9 @@ new MutationObserver(redrawAll).observe(document.documentElement,{attributes:tru
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(paintMotif,150);});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>update());
 
-tab(S.tab==='calc'||S.tab==='mes'?S.tab:'prep');
+tab(S.tab==='calc'||S.tab==='mes'?S.tab:'prep',{scroll:false});
 paintMotif();
+startIntro();
 })();
 </script>
 

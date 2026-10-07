@@ -1,8 +1,7 @@
 {
-  "name": "Visée Projecteur",
-  "short_name": "Visée",
-  "description": "Tilt de projecteur réglé au sol, inclinomètre tilt + roll.",
-  "lang": "fr",
+  "name": "HangItRight – Projector Rigging",
+  "short_name": "HangItRight",
+  "description": "Plan the projector hang, compute the tilt and set it on the floor with your phone.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -10,8 +9,8 @@
   "background_color": "#93cfd3",
   "theme_color": "#93cfd3",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "icon-192-v2.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-v2.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512-v2.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
