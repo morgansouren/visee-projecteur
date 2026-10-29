@@ -322,6 +322,20 @@ nav.tabs{gap:clamp(10px,3.4vw,28px)}nav.tabs button{font-size:clamp(13px,4vw,19p
       <ul class="rows" id="htRows"></ul>
       <p class="note" id="htNote"></p>
     </section>
+
+    <section class="block" aria-live="polite">
+      <div class="bhead"><h2 data-i18n="h.bright">Luminosité</h2><span data-i18n="b.sub">moyenne sur l'image</span></div>
+      <div class="hero hero-b">
+        <span class="big sm" id="pbFl">–</span>
+        <span class="sentence" id="pbVerdict"></span>
+      </div>
+      <div class="bgauge" id="pbGauge" aria-hidden="true"><div class="bg-bar"></div><div class="bg-cur" id="pbCur"><span id="pbCurV"></span></div><div class="bg-ticks" id="pbTicks"></div></div>
+      <div class="alerts" id="pbAdv"></div>
+      <div class="fields">
+        <label class="f"><span data-i18n-html="b.pct">Puissance utile <em>%</em></span><input id="lumPct2" type="number" step="5" min="0" max="100" inputmode="numeric" value="100"></label>
+      </div>
+      <ul class="rows" id="pbRows"></ul>
+    </section>
   </div>
 
   <!-- ============ CALCULER ============ -->
@@ -348,23 +362,6 @@ nav.tabs{gap:clamp(10px,3.4vw,28px)}nav.tabs button{font-size:clamp(13px,4vw,19p
     </section>
 
     <section class="block" aria-live="polite">
-      <div class="bhead"><h2 data-i18n="h.bright">Luminosité</h2><span data-i18n="b.sub">moyenne sur l'image</span></div>
-      <div class="hero hero-b">
-        <span class="big sm" id="bFl">–</span>
-        <span class="sentence" id="bVerdict"></span>
-      </div>
-      <div class="bgauge" id="bGauge" aria-hidden="true"><div class="bg-bar"></div><div class="bg-cur" id="bCur"><span id="bCurV"></span></div><div class="bg-ticks" id="bTicks"></div></div>
-      <div class="alerts" id="bAdv"></div>
-      <div class="fields">
-        <label class="f"><span data-i18n-html="b.pct">Puissance utile <em>%</em></span><input id="lumPct" type="number" step="5" min="0" max="100" inputmode="numeric" value="100"></label>
-      </div>
-      <ul class="rows" id="bRows"></ul>
-      <div class="lab" style="padding-top:16px" data-i18n="b.scale">Repères</div>
-      <ul class="rows bscale" id="bScale"></ul>
-      <p class="note" id="bNote"></p>
-    </section>
-
-    <section class="block" aria-live="polite">
       <div class="bhead"><h2 data-i18n="h.details">Détails</h2><span data-i18n="c.same">la position est la même que dans Préparer</span></div>
       <div class="alerts" id="rMsgs"></div>
       <ul class="rows" id="rKv"></ul>
@@ -385,6 +382,23 @@ nav.tabs{gap:clamp(10px,3.4vw,28px)}nav.tabs button{font-size:clamp(13px,4vw,19p
       </div>
       <ul class="rows" id="rCover" style="padding-top:10px"></ul>
       <p class="note" id="rCoverNote"></p>
+    </section>
+
+    <section class="block" aria-live="polite">
+      <div class="bhead"><h2 data-i18n="h.bright">Luminosité</h2><span data-i18n="b.sub">moyenne sur l'image</span></div>
+      <div class="hero hero-b">
+        <span class="big sm" id="bFl">–</span>
+        <span class="sentence" id="bVerdict"></span>
+      </div>
+      <div class="bgauge" id="bGauge" aria-hidden="true"><div class="bg-bar"></div><div class="bg-cur" id="bCur"><span id="bCurV"></span></div><div class="bg-ticks" id="bTicks"></div></div>
+      <div class="alerts" id="bAdv"></div>
+      <div class="fields">
+        <label class="f"><span data-i18n-html="b.pct">Puissance utile <em>%</em></span><input id="lumPct" type="number" step="5" min="0" max="100" inputmode="numeric" value="100"></label>
+      </div>
+      <ul class="rows" id="bRows"></ul>
+      <div class="lab" style="padding-top:16px" data-i18n="b.scale">Repères</div>
+      <ul class="rows bscale" id="bScale"></ul>
+      <p class="note" id="bNote"></p>
     </section>
   </div>
 
@@ -1001,34 +1015,43 @@ function renderCalc(C){
    Le flux du projecteur se répartit sur toute l'image de la dalle (bandes noires comprises),
    trapèze du keystone inclus. Éclairement E = lm / m² (lux) ; luminance d'une toile lambertienne
    de gain G : L = E·G/π (cd/m²) ; 1 fL = 3,426 cd/m², donc fL = lm·G / surface en pieds carrés. */
-const B_TIERS=[[6,'b.t1','bad'],[12,'b.t2','warn'],[20,'b.t3','ok'],[40,'b.t4','ok'],[80,'b.t5','ok'],[Infinity,'b.t6','ok']];
+const B_TIERS=[[6,'b.t1','bad'],[14,'b.t2','warn'],[20,'b.t3','ok'],[40,'b.t4','ok'],[80,'b.t5','ok'],[Infinity,'b.t6','ok']];
+// La même section existe dans Calculer (préfixe « b », avec repères) et dans Préparer (préfixe « pb », sans repères) :
+// un seul calcul, deux affichages. Les deux champs « puissance utile » sont synchronisés.
 function renderBright(R){
   const lm=(+$('lum').value||0)*clamp(+$('lumPct').value||0,0,100)/100,G=+$('gain').value||0;
   const P=R&&R.panel,A=P?(P.wTop+P.wBot)/2*(P.yTop-P.yBot):NaN;
-  if(!(lm>0&&G>0&&A>0)){$('bGauge').hidden=true;$('bAdv').innerHTML='';$('bFl').textContent='–';$('bVerdict').textContent='';$('bRows').innerHTML='';$('bScale').innerHTML='';$('bNote').textContent='';return;}
+  if(!(lm>0&&G>0&&A>0)){
+    ['b','pb'].forEach(x=>{$(x+'Gauge').hidden=true;$(x+'Adv').innerHTML='';$(x+'Fl').textContent='–';$(x+'Verdict').textContent='';$(x+'Rows').innerHTML='';});
+    $('bScale').innerHTML='';$('bNote').textContent='';return;}
   const E=lm/A,nits=E*G/Math.PI,fL=nits/3.426;
   const i=B_TIERS.findIndex(t=>fL<t[0]),tier=B_TIERS[i];
-  $('bFl').innerHTML=`${fmt(fL,fL<10?1:0)}<small> fL</small>`;
-  $('bVerdict').innerHTML=`<span class="chip ${tier[2]}">${tx(tier[1])}</span>`;
-  $('bRows').innerHTML=[[tx('b.lm'),`${fmt(lm,0)} lm`],[tx('b.area'),`${fmt(A,1)} m²<small>${fmt(P.wBot,2)} × ${fmt(P.yTop-P.yBot,2)} m</small>`],
+  const rows=[[tx('b.lm'),`${fmt(lm,0)} lm`],[tx('b.area'),`${fmt(A,1)} m²<small>${fmt(P.wBot,2)} × ${fmt(P.yTop-P.yBot,2)} m</small>`],
     [tx('b.lux'),`${fmt(E,0)} lx`],[tx('b.nits'),`${fmt(nits,0)} cd/m²`]].map(([a,b])=>`<li><span>${a}</span><b>${b}</b></li>`).join('');
-  const lo=[0,6,12,20,40,80];
-  $('bScale').innerHTML=B_TIERS.map((t,k)=>{const r=k===0?`< ${fmt(6,0)}`:t[0]===Infinity?`> ${fmt(80,0)}`:`${fmt(lo[k],0)}–${fmt(t[0],0)}`;
-    return `<li class="${k===i?'cur':''}"><span>${tx(t[1])}</span><b>${r} fL</b></li>`;}).join('');
-  $('bNote').textContent=tx('b.note',{n:fmt(14,0),c:fmt(48,0)});
   /* jauge : échelle logarithmique de 2 à 120 fL (l'œil perçoit la luminosité en rapport, pas en écart),
      rouge sous 6 fL, jaune jusqu'à 14 fL (niveau cinéma SMPTE), vert au-delà */
   const pos=v=>clamp((Math.log(v)-Math.log(B_MIN))/(Math.log(B_MAX)-Math.log(B_MIN)),0,1)*100;
-  $('bGauge').hidden=false;
-  $('bGauge').querySelector('.bg-bar').style.background=`linear-gradient(90deg,#e5484d 0%,#e5484d ${pos(4)}%,#f5c400 ${pos(9)}%,#f5c400 ${pos(12)}%,#2fbf71 ${pos(B_OK)}%,#2fbf71 100%)`;
-  $('bCur').style.left=pos(fL)+'%';$('bCurV').textContent=fmt(fL,fL<10?1:0);
-  $('bTicks').innerHTML=[6,14,40,80].map(v=>`<span style="left:${pos(v)}%">${v}</span>`).join('');
-  // conseil : sous 14 fL, taille d'écran qui donnerait 14 fL (la luminosité varie comme 1/surface)
-  const T=R.T,k=Math.sqrt(fL/B_OK);
-  // si le zoom est déjà en butée (image plus grande que l'écran à cette distance), réduire l'écran n'aide pas : il faut rapprocher
-  const far=R.TR>R.p.lens.max+1e-6,vars={f:fmt(B_OK,0),w:fmt(T.sw*k,2),h:fmt(T.sh*k,2),l:fmt(Math.ceil(lm*B_OK/fL/100)*100,0),d:fmt(R.D*k,1)};
-  $('bAdv').innerHTML=fL<B_OK?`<div class="alert ${fL<6?'bad':'warn'}"><span>${tx(far?'b.adv.far':'b.adv',vars)}</span></div>`:'';
+  const grad=`linear-gradient(90deg,#e5484d 0%,#e5484d ${pos(4)}%,#f5c400 ${pos(9)}%,#f5c400 ${pos(12)}%,#2fbf71 ${pos(B_OK)}%,#2fbf71 100%)`;
+  const ticks=[6,14,40,80].map(v=>`<span style="left:${pos(v)}%">${v}</span>`).join('');
+  // conseil sous 14 fL : la luminosité varie comme 1/surface → taille d'écran (ou distance, si le zoom est en butée) qui donnerait 14 fL
+  const T=R.T,k=Math.sqrt(fL/B_OK),far=R.TR>R.p.lens.max+1e-6;
+  const vars={f:fmt(B_OK,0),w:fmt(T.sw*k,2),h:fmt(T.sh*k,2),l:fmt(Math.ceil(lm*B_OK/fL/100)*100,0),d:fmt(R.D*k,1)};
+  const adv=fL<B_OK?`<div class="alert ${fL<6?'bad':'warn'}"><span>${tx(far?'b.adv.far':'b.adv',vars)}</span></div>`:'';
+  ['b','pb'].forEach(x=>{
+    $(x+'Fl').innerHTML=`${fmt(fL,fL<10?1:0)}<small> fL</small>`;
+    $(x+'Verdict').innerHTML=`<span class="chip ${tier[2]}">${tx(tier[1])}</span>`;
+    $(x+'Rows').innerHTML=rows;$(x+'Adv').innerHTML=adv;
+    $(x+'Gauge').hidden=false;$(x+'Gauge').querySelector('.bg-bar').style.background=grad;
+    $(x+'Cur').style.left=pos(fL)+'%';$(x+'CurV').textContent=fmt(fL,fL<10?1:0);$(x+'Ticks').innerHTML=ticks;});
+  const lo=[0,6,14,20,40,80];
+  $('bScale').innerHTML=B_TIERS.map((t,k)=>{const r=k===0?`< ${fmt(6,0)}`:t[0]===Infinity?`> ${fmt(80,0)}`:`${fmt(lo[k],0)}–${fmt(t[0],0)}`;
+    return `<li class="${k===i?'cur':''}"><span>${tx(t[1])}</span><b>${r} fL</b></li>`;}).join('');
+  $('bNote').textContent=tx('b.note',{n:fmt(14,0),c:fmt(48,0)});
 }
+// le second champ « puissance utile » (Préparer) recopie sa valeur dans le premier, qui est mémorisé
+$('lumPct2').value=$('lumPct').value;
+$('lumPct2').addEventListener('input',()=>{$('lumPct').value=$('lumPct2').value;update();});
+$('lumPct').addEventListener('input',()=>{$('lumPct2').value=$('lumPct').value;});
 const B_MIN=2,B_MAX=120,B_OK=14;
 function drawSide(){
   const svg=$('sideView'),W=360,Ht=210,pad=22,ink=css('--ink'),mut=css('--muted'),T=R.T;
